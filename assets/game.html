@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Galactic Bureaucracy</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: radial-gradient(ellipse at top, #15153a 0%, #050510 100%);
+    color: #e8e8ff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  body { padding: 12px; padding-bottom: 24px; }
+  h1 { font-size: 14px; margin: 0; color: #9090c0; letter-spacing: 2px; text-transform: uppercase; text-align: center; }
+  .subtitle { font-size: 10px; color: #6060a0; text-align: center; margin: 2px 0 14px; font-style: italic; }
+
+  /* TAB BAR */
+  .tabs {
+    display: flex; gap: 4px; margin-bottom: 14px;
+    background: rgba(20,20,40,0.6); padding: 4px; border-radius: 10px;
+  }
+  .tab {
+    flex: 1; padding: 10px; text-align: center; font-size: 12px;
+    border-radius: 7px; cursor: pointer; color: #7080a0;
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+    transition: all 0.15s;
+  }
+  .tab.active { background: #2040a0; color: #fff; box-shadow: 0 0 10px rgba(60,120,255,0.4); }
+  .tab .badge {
+    display: inline-block; background: #c04040; color: #fff;
+    font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-left: 4px;
+  }
+
+  /* RESOURCE BAR */
+  .resource-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+    margin-bottom: 14px;
+  }
+  .res {
+    background: rgba(20, 20, 50, 0.6);
+    border: 1px solid #3030a0;
+    border-radius: 8px;
+    padding: 8px 6px;
+    text-align: center;
+  }
+  .res.locked { opacity: 0.3; border-color: #404040; }
+  .res-icon { font-size: 18px; line-height: 1; }
+  .res-amount { font-size: 13px; font-weight: 700; color: #c8e8ff; margin-top: 3px; }
+  .res-rate { font-size: 9px; color: #80a0d0; margin-top: 1px; }
+  .res-name { font-size: 8px; color: #6080b0; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* PAGE CONTAINERS */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* IDLE PAGE */
+  .click-area {
+    position: relative; height: 160px;
+    background: radial-gradient(circle at center, rgba(80, 120, 255, 0.15) 0%, transparent 70%);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px; cursor: pointer; overflow: hidden;
+    touch-action: manipulation;
+  }
+  .crystal-orb {
+    width: 100px; height: 100px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #a0d8ff 0%, #4080d0 50%, #1040a0 100%);
+    box-shadow: 0 0 35px rgba(100, 180, 255, 0.55), inset -10px -10px 25px rgba(0, 20, 80, 0.4);
+    transition: transform 0.1s;
+  }
+  .click-area:active .crystal-orb { transform: scale(0.92); }
+  .click-hint { position: absolute; bottom: 10px; font-size: 10px; color: #6080b0; }
+  .float-num {
+    position: absolute; pointer-events: none;
+    font-size: 16px; font-weight: 700; color: #c8e8ff;
+    text-shadow: 0 0 8px rgba(120, 200, 255, 0.8);
+    animation: floatUp 1s ease-out forwards;
+  }
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-60px); }
+  }
+
+  .section-title { font-size: 11px; color: #9090c0; letter-spacing: 2px; margin: 14px 0 8px; text-transform: uppercase; }
+
+  .vassal {
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid #404080;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 10px;
+    transition: all 0.2s;
+  }
+  .vassal.affordable { border-color: #60a0ff; box-shadow: 0 0 10px rgba(100, 160, 255, 0.25); }
+  .vassal.locked { opacity: 0.4; }
+  .vassal-icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    background: linear-gradient(135deg, #404080, #6060a0);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .vassal-info { flex: 1; min-width: 0; }
+  .vassal-name { font-size: 12px; font-weight: 600; color: #d0d0ff; }
+  .vassal-name .count { color: #80a0d0; font-weight: 400; }
+  .vassal-flavor { font-size: 9px; color: #6070a0; font-style: italic; margin-top: 1px; line-height: 1.3; }
+  .vassal-effect { font-size: 9px; color: #80c080; margin-top: 2px; }
+  .vassal-buy {
+    background: #2040a0; color: #fff;
+    border: 1px solid #4060c0; border-radius: 6px;
+    padding: 6px 10px; font-size: 11px; font-weight: 600;
+    min-width: 75px; cursor: pointer;
+  }
+  .vassal.affordable .vassal-buy { background: #3060d0; }
+  .vassal-buy:disabled { opacity: 0.4; cursor: not-allowed; }
+  .vassal-buy small { display: block; font-size: 8px; font-weight: 400; opacity: 0.85; }
+
+  /* MAP PAGE */
+  #map-svg { width: 100%; height: 360px; background: rgba(0,0,0,0.3); border-radius: 12px; }
+  .region-info {
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid #404080;
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 10px;
+    min-height: 100px;
+  }
+  .region-info .name { font-size: 14px; font-weight: 600; color: #d0d0ff; }
+  .region-info .status { font-size: 11px; margin-top: 4px; }
+  .region-info .desc { font-size: 11px; color: #a0a0c8; margin-top: 8px; font-style: italic; line-height: 1.4; }
+  .attack-btn {
+    width: 100%; background: #a03030; color: #fff;
+    border: 1px solid #c04040; border-radius: 8px;
+    padding: 12px; font-size: 13px; font-weight: 600;
+    margin-top: 10px; cursor: pointer;
+  }
+  .attack-btn:disabled { background: #503030; opacity: 0.6; cursor: not-allowed; }
+  .attack-btn small { display: block; font-size: 10px; font-weight: 400; opacity: 0.9; margin-top: 2px; }
+
+  /* WAR PAGE */
+  .war-row {
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid #404080;
+    border-radius: 10px;
+    padding: 12px; margin-bottom: 8px;
+  }
+  .war-converter {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
+  }
+  .convert-btn {
+    flex: 1; background: #602020; color: #fff;
+    border: 1px solid #a04040; border-radius: 6px;
+    padding: 10px; font-size: 11px; font-weight: 600; cursor: pointer;
+  }
+  .convert-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .mech-buy {
+    background: #803020; color: #fff;
+    border: 1px solid #c04030; border-radius: 6px;
+    padding: 8px 12px; font-size: 11px; font-weight: 600; cursor: pointer;
+  }
+  .mech-buy:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .timer-bar {
+    height: 18px; background: rgba(0,0,0,0.4); border-radius: 9px;
+    margin-top: 8px; overflow: hidden; position: relative;
+  }
+  .timer-fill {
+    height: 100%; background: linear-gradient(90deg, #c04040, #ff8040);
+    transition: width 0.3s linear; border-radius: 9px;
+  }
+  .timer-label {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+  }
+
+  /* TOASTS */
+  .events {
+    position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+    z-index: 100; pointer-events: none; width: calc(100% - 24px);
+  }
+  .event-toast {
+    background: rgba(30, 30, 70, 0.97);
+    border: 1px solid #60a0ff;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #d0e0ff;
+    margin-bottom: 6px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    animation: toastIn 0.3s ease-out, toastOut 0.3s ease-in 3.2s forwards;
+    text-align: center;
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes toastOut { to { opacity: 0; transform: translateY(-20px); } }
+
+  /* DEV PANEL */
+  .dev-panel {
+    background: rgba(0,0,0,0.4);
+    border: 1px dashed #404060;
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 16px;
+    font-size: 10px;
+    color: #80809a;
+  }
+  .dev-panel h3 { margin: 0 0 6px; color: #a0a0c0; font-size: 10px; }
+  .dev-stats { font-family: monospace; line-height: 1.5; }
+  .dev-stats div { display: flex; justify-content: space-between; }
+  .dev-stats strong { color: #80c0ff; }
+  button.reset { width: 100%; background: #803030; color: #fff; border: none; padding: 6px; border-radius: 6px; margin-top: 8px; cursor: pointer; font-size: 10px; }
+
+  /* DIMENSION ROWS */
+  .dim-section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 14px 0 8px;
+  }
+  .dim-section-header .section-title { margin: 0; }
+  .dim-mode-btns { display: flex; gap: 4px; }
+  .dim-mode-btn {
+    background: rgba(20,20,60,0.7); color: #7080a0;
+    border: 1px solid #404080; border-radius: 5px;
+    padding: 4px 8px; font-size: 10px; font-weight: 600;
+    cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .dim-mode-btn.active { background: #2040a0; color: #fff; border-color: #4060c0; }
+  .dim-row {
+    background: rgba(20, 20, 60, 0.4);
+    border: 1px solid #303060;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .dim-row.affordable { border-color: #5080c0; box-shadow: 0 0 8px rgba(80,128,255,0.2); }
+  .dim-row.locked { opacity: 0.35; }
+  .dim-tier {
+    width: 22px; text-align: center; font-size: 11px;
+    font-weight: 700; color: #6080b0; flex-shrink: 0;
+  }
+  .dim-info { flex: 1; min-width: 0; }
+  .dim-name { font-size: 11px; font-weight: 600; color: #c0d0ff; }
+  .dim-flavor { font-size: 8px; color: #5060a0; font-style: italic; margin-top: 1px; line-height: 1.3; }
+  .dim-stats { font-size: 9px; color: #7090b0; margin-top: 2px; }
+  .dim-btns { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
+  .dim-buy-btn {
+    background: #1a2860; color: #a0c0ff;
+    border: 1px solid #304090; border-radius: 5px;
+    padding: 4px 8px; font-size: 9px; font-weight: 600;
+    cursor: pointer; text-align: center; min-width: 54px;
+  }
+  .dim-buy-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .dim-buy-btn.affordable { background: #2040a0; color: #fff; border-color: #4060c0; }
+  .dim-buy-btn small { display: block; font-size: 8px; font-weight: 400; opacity: 0.8; }
+  .max-all-btn {
+    width: 100%; background: #302060; color: #c0a0ff;
+    border: 1px solid #604090; border-radius: 8px;
+    padding: 10px; font-size: 12px; font-weight: 600;
+    margin-top: 4px; cursor: pointer;
+  }
+
+  /* MAP NODES */
+  .map-node { cursor: pointer; transition: all 0.2s; }
+  .map-node.selected circle { stroke: #ffe080; stroke-width: 3; }
+</style>
+</head>
+<body>
+
+<h1>Galactic Bureaucracy</h1>
+<div class="subtitle">"Feragat formu onaylanmadi. Daire 7-B'ye gidin."</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" data-tab="idle">Idare</div>
+  <div class="tab" data-tab="map">Harita</div>
+  <div class="tab" data-tab="war">Savas <span id="war-badge" class="badge" style="display:none">!</span></div>
+</div>
+
+<!-- RESOURCE BAR -->
+<div class="resource-bar">
+  <div class="res" id="res-crystal">
+    <div class="res-icon">&#9670;</div>
+    <div class="res-amount" id="amt-crystal">0</div>
+    <div class="res-rate" id="rate-crystal">0/sn</div>
+    <div class="res-name">Crystal</div>
+  </div>
+  <div class="res locked" id="res-sun">
+    <div class="res-icon">&#9728;</div>
+    <div class="res-amount" id="amt-sun">0</div>
+    <div class="res-rate" id="rate-sun">0/sn</div>
+    <div class="res-name">Sun Drips</div>
+  </div>
+  <div class="res locked" id="res-pepper">
+    <div class="res-icon">&#127798;</div>
+    <div class="res-amount" id="amt-pepper">0</div>
+    <div class="res-rate" id="rate-pepper">0/sn</div>
+    <div class="res-name">Pepper</div>
+  </div>
+  <div class="res locked" id="res-redpill">
+    <div class="res-icon">&#128138;</div>
+    <div class="res-amount" id="amt-redpill">0</div>
+    <div class="res-rate">&nbsp;</div>
+    <div class="res-name">Red Pill</div>
+  </div>
+</div>
+
+<!-- IDLE PAGE -->
+<div class="page active" id="page-idle">
+  <div class="click-area" id="clickArea">
+    <div class="crystal-orb"></div>
+    <div class="click-hint" id="hint">orb'a dokun -- kristal kazan</div>
+  </div>
+
+  <!-- DIMENSIONS -->
+  <div class="dim-section-header">
+    <span class="section-title">Boyutlar</span>
+    <div class="dim-mode-btns">
+      <button class="dim-mode-btn active" id="mode-btn-1" onclick="setDimMode(1)">x1</button>
+      <button class="dim-mode-btn" id="mode-btn-10" onclick="setDimMode(10)">&rarr;10</button>
+    </div>
+  </div>
+  <div id="dim-container"></div>
+  <button class="max-all-btn" onclick="maxAllDims()">Max All Dimensions</button>
+
+  <div class="section-title" style="margin-top:16px;">Vassallar</div>
+
+  <div class="vassal" id="vassal-formsworth" data-key="formsworth">
+    <div class="vassal-icon">&#128203;</div>
+    <div class="vassal-info">
+      <div class="vassal-name">Lord Formsworth III <span class="count" id="count-formsworth"></span></div>
+      <div class="vassal-flavor">"40 yildir ayni formu dolduruyor. Hala onaylanmadi."</div>
+      <div class="vassal-effect">+12% Crystal uretimi (her seviyede)</div>
+    </div>
+    <button class="vassal-buy" id="buy-formsworth">
+      Al
+      <small id="cost-formsworth">25 &#9670;</small>
+    </button>
+  </div>
+
+  <div class="vassal locked" id="vassal-brglx" data-key="brglx">
+    <div class="vassal-icon">&#9728;</div>
+    <div class="vassal-info">
+      <div class="vassal-name">Sun Scraper Brglx <span class="count" id="count-brglx"></span></div>
+      <div class="vassal-flavor" id="flavor-brglx">&#128274; 10 Formsworth + Sun bolgesi gerekli</div>
+      <div class="vassal-effect">Sun Drips otomasyonu (+1.0 &#9728;/sn)</div>
+    </div>
+    <button class="vassal-buy" id="buy-brglx" disabled>
+      Al
+      <small id="cost-brglx">500 &#9670;</small>
+    </button>
+  </div>
+
+  <div class="vassal locked" id="vassal-zyx" data-key="zyx">
+    <div class="vassal-icon">&#127798;</div>
+    <div class="vassal-info">
+      <div class="vassal-name">Pepper Bakani Zyx <span class="count" id="count-zyx"></span></div>
+      <div class="vassal-flavor" id="flavor-zyx">&#128274; Pepper bolgesi gerekli</div>
+      <div class="vassal-effect">Pepper +20% (carpan) + bolge hasat otomasyonu</div>
+    </div>
+    <button class="vassal-buy" id="buy-zyx" disabled>
+      Al
+      <small id="cost-zyx">5K &#9670;</small>
+    </button>
+  </div>
+
+  <div class="vassal locked" id="vassal-vrrk" data-key="vrrk">
+    <div class="vassal-icon">&#9876;</div>
+    <div class="vassal-info">
+      <div class="vassal-name">Drood Komutani Vrrk <span class="count" id="count-vrrk"></span></div>
+      <div class="vassal-flavor" id="flavor-vrrk">&#128274; Ilk savas kazanildiktan sonra</div>
+      <div class="vassal-effect">Savas timer -1h (her seviyede, -3h tavan)</div>
+    </div>
+    <button class="vassal-buy" id="buy-vrrk" disabled>
+      Al
+      <small id="cost-vrrk">2.5K &#9670;</small>
+    </button>
+  </div>
+</div>
+
+<!-- MAP PAGE -->
+<div class="page" id="page-map">
+  <div class="section-title">Galaktik Harita</div>
+  <svg id="map-svg" viewBox="0 0 400 360"></svg>
+  <div class="region-info" id="region-info">
+    <div class="name">Bir bolge sec</div>
+    <div class="desc">Haritadaki dugmelere dokunarak bolgeleri incele. Senin olan bolgelerden hasat yapilir; dusmanlarla savas acabilirsin.</div>
+  </div>
+</div>
+
+<!-- WAR PAGE -->
+<div class="page" id="page-war">
+  <div class="section-title">Savas Yonetimi</div>
+
+  <div class="war-row">
+    <div style="font-size:11px; color:#a0a0c8; margin-bottom:6px;">Red Pill uretimi -- Crystal donusumu</div>
+    <div class="war-converter">
+      <div style="flex:1; font-size:11px;">
+        100 &#9670; &rarr; 1 &#128138;<br>
+        <span style="color:#80a0d0; font-size:10px;">Galaktik HR Muduru: -%15 maliyet (yakin)</span>
+      </div>
+      <button class="convert-btn" id="convert-1" onclick="convertCrystal(1)">x1<br><small>100 &#9670;</small></button>
+      <button class="convert-btn" id="convert-10" onclick="convertCrystal(10)">x10<br><small>1K &#9670;</small></button>
+    </div>
+  </div>
+
+  <div class="war-row">
+    <div style="font-size:11px; color:#a0a0c8; margin-bottom:6px;">Mech-Bro Enlistment</div>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+      <div style="font-size:22px;">&#129302;</div>
+      <div style="flex:1; font-size:11px;">
+        Mech-Bro <span id="mech-count">x0</span><br>
+        <span style="color:#6070a0; font-size:10px; font-style:italic;">"Mecha suit icinde sivilceli ergen."</span>
+      </div>
+      <button class="mech-buy" id="buy-mech" onclick="buyMech()">+1 Bro<br><small>5 &#128138;</small></button>
+    </div>
+    <div style="font-size:10px; color:#80a0d0;">Bir savas 3 Mech-Bro tuketir.</div>
+  </div>
+
+  <div id="active-wars-container"></div>
+
+  <div class="section-title">Aktif Savas Yok mu?</div>
+  <div style="font-size:11px; color:#a0a0c8; line-height:1.5;">
+    Haritaya gidip bir dusmanbolge sec, "Saldir" butonuna bas. 8 saat timer baslar -- bekleme surecinde idle ekonomi calisir, geri donundugunde odulen hazir.
+  </div>
+</div>
+
+<div class="events" id="events"></div>
+
+<!-- DEV PANEL -->
+<div class="dev-panel">
+  <h3>DEV STATS</h3>
+  <div class="dev-stats" id="stats"></div>
+  <button class="reset" onclick="resetGame()">Sifirla</button>
+  <button class="reset" style="background:#306030; margin-top:4px;" onclick="cheatBoost()">+10K Crystal (test)</button>
+  <button class="reset" style="background:#306030; margin-top:4px;" onclick="cheatTimeWarp()">+1h zaman (test)</button>
+</div>
+
+<script>
+'use strict';
+
+// ============ BALANCE CONSTANTS ============
+var DIMENSION_BASE_COST = [10, 100, 10000, 1e6, 1e9, 1e13, 1e15, 1e18];
+var DIMENSION_COST_MULT = [1000, 10000, 100000, 1e6, 1e8, 1e10, 1e12, 1e15];
+var DIMENSION_BASE_PROD = [1, 1, 1, 1, 1, 1, 1, 1];
+var DIMENSION_MULTIPLIER_BASE = 1.0;
+var DIMENSION_MULTIPLIER_STEP = 2.0;
+var DIMENSION_MULTIPLIER_THRESHOLD = 10;
+var DIMENSION_NAMES = [
+  'Imperial Scriv', 'Sector Clerk', 'Regional Overseer', 'Star Consul',
+  'Void Prefect', 'Galactic Auditor', 'Dimensional Envoy', 'The Bureaucrat Supreme'
+];
+var DIMENSION_FLAVORS = [
+  '"Fills out forms. Produces crystal. Sometimes the right form."',
+  '"Manages the Scrivs. Has never met one."',
+  '"Oversees 12 sectors. Knows the name of 0."',
+  '"A consul of stars. Stapler missing since 3042."',
+  '"Prefect of the void. The void prefects back."',
+  '"Audits the galaxy. The galaxy owes 4 forms."',
+  '"Envoy between dimensions. Lost the return memo."',
+  '"Supreme. The form IS the bureaucrat now."'
+];
+var FORMSWORTH_BUFF_CRYSTAL  = 0.12;
+var BRGLX_SUN_PRODUCTION     = 1.0;
+var ZYX_PEPPER_BASE_PROD     = 0.5;
+var ZYX_SELF_COMPOUND        = 0.20;
+var REGION_SUN_BASE_YIELD    = 0.5;
+var REGION_PEPPER_BASE_YIELD = 0.5;
+
+// ============ STATE ============
+var state = {
+  crystal: 0,
+  sun: 0,
+  pepper: 0,
+  redpill: 0,
+  mechBros: 0,
+  totalEarned: 0,
+  clicks: 0,
+  startTime: Date.now(),
+  dimensions: [
+    { owned: 0, purchased: 0 },
+    { owned: 0, purchased: 0 },
+    { owned: 0, purchased: 0 },
+    { owned: 0, purchased: 0 },
+    { owned: 0, purchased: 0 },
+    { owned: 0, purchased: 0 },
+    { owned: 0, purchased: 0 },
+    { owned: 0, purchased: 0 }
+  ],
+  dimBuyMode: 1,
+  vassals: {
+    formsworth: { count: 0, baseCost: 50,   mult: 1.15, currency: 'crystal' },
+    brglx:      { count: 0, baseCost: 500,  mult: 1.15, currency: 'crystal' },
+    zyx:        { count: 0, baseCost: 5000, mult: 1.18, currency: 'crystal' },
+    vrrk:       { count: 0, baseCost: 2500, mult: 1.20, currency: 'crystal' },
+  },
+  regions: [
+    { id: 'home',     name: 'Kerebros-7 (Baskent)',    type: 'crystal', owner: 'player', x: 200, y: 180, connects: ['sun1','pepper1','npc1'], baseYield: 0 },
+    { id: 'sun1',     name: 'Brglx Tepesi',             type: 'sun',     owner: 'enemy',  x: 100, y: 100, connects: ['home','sun2','pepper1'] },
+    { id: 'sun2',     name: 'Helios IX',                type: 'sun',     owner: 'enemy',  x: 60,  y: 220, connects: ['sun1','pepper1'] },
+    { id: 'sun3',     name: 'Korol Yildiz Savki',       type: 'sun',     owner: 'enemy',  x: 140, y: 300, connects: ['sun2','pepper2'] },
+    { id: 'pepper1',  name: 'Pulchritudia',             type: 'pepper',  owner: 'enemy',  x: 280, y: 90,  connects: ['home','sun1','npc1'] },
+    { id: 'pepper2',  name: 'Melange Cikintisi',        type: 'pepper',  owner: 'enemy',  x: 340, y: 220, connects: ['home','pepper1','sun3','npc1'] },
+    { id: 'pepper3',  name: 'Zyxworld',                 type: 'pepper',  owner: 'enemy',  x: 280, y: 310, connects: ['pepper2','sun3'] },
+    { id: 'npc1',     name: 'NPC: Drood Federasyonu',   type: 'capital', owner: 'enemy',  x: 350, y: 30,  connects: ['pepper1','pepper2'] },
+  ],
+  activeWars: [],
+  baseWarHours: 8,
+  selectedRegion: null,
+  firstDimensionAt: null,
+  firstFormsworthAt: null,
+  firstConquestAt: null,
+};
+
+var REGION_BASE_YIELD = { sun: REGION_SUN_BASE_YIELD, pepper: REGION_PEPPER_BASE_YIELD, crystal: 0.0, capital: 0 };
+
+// ============ DIMENSION SYSTEM ============
+function dimCurrentCost(i) {
+  var sets = Math.floor(state.dimensions[i].purchased / DIMENSION_MULTIPLIER_THRESHOLD);
+  return DIMENSION_BASE_COST[i] * Math.pow(DIMENSION_COST_MULT[i], sets);
+}
+
+function dimMultiplier(i) {
+  var steps = Math.floor(state.dimensions[i].purchased / DIMENSION_MULTIPLIER_THRESHOLD);
+  return DIMENSION_MULTIPLIER_BASE * Math.pow(DIMENSION_MULTIPLIER_STEP, steps);
+}
+
+function dimCrystalRate() {
+  var formsworthMult = 1 + FORMSWORTH_BUFF_CRYSTAL * state.vassals.formsworth.count;
+  return state.dimensions[0].owned * DIMENSION_BASE_PROD[0] * dimMultiplier(0) * formsworthMult;
+}
+
+function setDimMode(mode) {
+  state.dimBuyMode = mode;
+}
+
+function _buyDim1(i) {
+  var cost = dimCurrentCost(i);
+  if (state.crystal < cost) return false;
+  state.crystal -= cost;
+  state.dimensions[i].owned++;
+  state.dimensions[i].purchased++;
+  return true;
+}
+
+function _buyDimUntil10(i) {
+  var current = state.dimensions[i].purchased;
+  var nextThresh = (Math.floor(current / DIMENSION_MULTIPLIER_THRESHOLD) + 1) * DIMENSION_MULTIPLIER_THRESHOLD;
+  var toBuy = nextThresh - current;
+  var costEach = dimCurrentCost(i);
+  var canAfford = Math.min(toBuy, Math.floor(state.crystal / costEach));
+  if (canAfford === 0) return false;
+  state.crystal -= costEach * canAfford;
+  state.dimensions[i].owned += canAfford;
+  state.dimensions[i].purchased += canAfford;
+  return true;
+}
+
+function buyDim(i) {
+  var bought = state.dimBuyMode === 1 ? _buyDim1(i) : _buyDimUntil10(i);
+  if (bought && !state.firstDimensionAt) {
+    state.firstDimensionAt = (Date.now() - state.startTime) / 1000;
+    toast('&#9670; Ilk Boyut gorevde. Kristal akiyor.');
+  }
+}
+
+function maxAllDims() {
+  var anyBought = false;
+  for (var i = 0; i < 8; i++) {
+    if (_buyDimUntil10(i)) anyBought = true;
+  }
+  if (anyBought && !state.firstDimensionAt) {
+    state.firstDimensionAt = (Date.now() - state.startTime) / 1000;
+    toast('&#9670; Ilk Boyut gorevde. Kristal akiyor.');
+  }
+}
+
+function countOwnedRegions(type) {
+  var count = 0;
+  for (var i = 0; i < state.regions.length; i++) {
+    if (state.regions[i].owner === 'player' && state.regions[i].type === type) count++;
+  }
+  return count;
+}
+
+// ============ MAP RENDER ============
+function renderMap() {
+  var svg = document.getElementById('map-svg');
+  var html = '';
+
+  for (var ri = 0; ri < state.regions.length; ri++) {
+    var r = state.regions[ri];
+    for (var ci = 0; ci < r.connects.length; ci++) {
+      var cId = r.connects[ci];
+      var c = null;
+      for (var k = 0; k < state.regions.length; k++) {
+        if (state.regions[k].id === cId) { c = state.regions[k]; break; }
+      }
+      if (!c || c.id <= r.id) continue;
+      html += '<line x1="' + r.x + '" y1="' + r.y + '" x2="' + c.x + '" y2="' + c.y + '" stroke="#303060" stroke-width="1" stroke-dasharray="3,3"/>';
+    }
+  }
+
+  for (var ri2 = 0; ri2 < state.regions.length; ri2++) {
+    var r2 = state.regions[ri2];
+    var fill = r2.owner === 'player' ? '#3060d0' : (r2.type === 'capital' ? '#a04040' : (r2.type === 'sun' ? '#c0a040' : '#a04080'));
+    var stroke = r2.owner === 'player' ? '#80c0ff' : '#404060';
+    var radius = r2.type === 'capital' ? 18 : 14;
+    var icon = r2.type === 'crystal' ? '&#9670;' : (r2.type === 'sun' ? '&#9728;' : (r2.type === 'pepper' ? '&#127798;' : '&#9733;'));
+    var warring = null;
+    for (var wi = 0; wi < state.activeWars.length; wi++) {
+      if (state.activeWars[wi].regionId === r2.id) { warring = state.activeWars[wi]; break; }
+    }
+    var warMark = warring
+      ? '<circle cx="' + r2.x + '" cy="' + (r2.y - radius - 6) + '" r="4" fill="#ff8040"><animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/></circle>'
+      : '';
+    var isSelected = state.selectedRegion === r2.id ? 'selected' : '';
+
+    html += '<g class="map-node ' + isSelected + '" data-region="' + r2.id + '">'
+      + '<circle cx="' + r2.x + '" cy="' + r2.y + '" r="' + radius + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2"/>'
+      + '<text x="' + r2.x + '" y="' + (r2.y + 5) + '" text-anchor="middle" font-size="14" fill="#fff">' + icon + '</text>'
+      + '<text x="' + r2.x + '" y="' + (r2.y + radius + 12) + '" text-anchor="middle" font-size="9" fill="#a0a0c0">' + r2.name.split(' ')[0] + '</text>'
+      + warMark
+      + '</g>';
+  }
+
+  svg.innerHTML = html;
+
+  var nodes = svg.querySelectorAll('.map-node');
+  for (var ni = 0; ni < nodes.length; ni++) {
+    (function(g) {
+      g.addEventListener('click', function() { selectRegion(g.dataset.region); });
+    })(nodes[ni]);
+  }
+}
+
+function selectRegion(id) {
+  state.selectedRegion = id;
+  renderMap();
+  renderRegionInfo();
+}
+
+function findRegion(id) {
+  for (var i = 0; i < state.regions.length; i++) {
+    if (state.regions[i].id === id) return state.regions[i];
+  }
+  return null;
+}
+
+function findWar(regionId) {
+  for (var i = 0; i < state.activeWars.length; i++) {
+    if (state.activeWars[i].regionId === regionId) return state.activeWars[i];
+  }
+  return null;
+}
+
+function canAttack(region) {
+  if (region.owner === 'player') return { ok: false, reason: 'Zaten senin.' };
+  if (findWar(region.id)) return { ok: false, reason: 'Savas zaten devam ediyor.' };
+  var connected = false;
+  for (var i = 0; i < region.connects.length; i++) {
+    var c = findRegion(region.connects[i]);
+    if (c && c.owner === 'player') { connected = true; break; }
+  }
+  if (!connected) return { ok: false, reason: 'Sinirdas bir bolgen yok.' };
+  if (state.mechBros < 3) return { ok: false, reason: '3 Mech-Bro gerekli (' + state.mechBros + '/3).' };
+  return { ok: true };
+}
+
+function renderRegionInfo() {
+  var info = document.getElementById('region-info');
+  if (!state.selectedRegion) {
+    info.innerHTML = '<div class="name">Bir bolge sec</div><div class="desc">Haritadaki dugmelere dokunarak bolgeleri incele.</div>';
+    return;
+  }
+  var r = findRegion(state.selectedRegion);
+  var typeLabel = r.type === 'crystal' ? 'Crystal merkez' : (r.type === 'sun' ? 'Sun Drips bolgesi' : (r.type === 'pepper' ? 'Pepper Melange bolgesi' : 'NPC baskent'));
+  var ownerLabel = r.owner === 'player' ? '<span style="color:#80c0ff">&#10003; Senin</span>' : '<span style="color:#c08080">&#10007; Dusman</span>';
+
+  var html = '<div class="name">' + r.name + '</div><div class="status">' + typeLabel + ' &mdash; ' + ownerLabel + '</div>';
+
+  if (r.owner === 'player' && r.type !== 'crystal' && r.type !== 'capital') {
+    var yieldVal = REGION_BASE_YIELD[r.type];
+    var resName = r.type === 'sun' ? '&#9728; Sun Drips' : '&#127798; Pepper Melange';
+    html += '<div class="desc">Hasat: +' + yieldVal + '/sn ' + resName + '. Vassal otomasyonu ile artar.</div>';
+  } else if (r.owner === 'enemy') {
+    var war = findWar(r.id);
+    if (war) {
+      var elapsed = (Date.now() - war.startTime) / 1000;
+      var remaining = Math.max(0, war.duration - elapsed);
+      html += '<div class="desc">&#9876; Savas devam ediyor &mdash; ' + formatTime(remaining) + ' kaldi.</div>';
+    } else {
+      var check = canAttack(r);
+      var descText = r.type === 'sun'
+        ? 'Bu bolgeyi al, Sun Drips uretimine basla.'
+        : (r.type === 'pepper' ? 'Bu bolgeyi al, Pepper Melange uretimine basla.' : 'NPC baskent -- ileride onemli oduller.');
+      html += '<div class="desc">' + descText + '</div>';
+      if (check.ok) {
+        var dur = effectiveWarHours();
+        html += '<button class="attack-btn" onclick="attackRegion(\'' + r.id + '\')">&#9876; Saldir (3 &#129302;)<br><small>~' + dur + 'h savas timer</small></button>';
+      } else {
+        html += '<button class="attack-btn" disabled>' + check.reason + '</button>';
+      }
+    }
+  } else if (r.type === 'crystal') {
+    html += '<div class="desc">Anavatan. Cyber Crystal uretimi tum imparatorluga yayiliyor.</div>';
+  }
+
+  info.innerHTML = html;
+}
+
+function effectiveWarHours() {
+  var reduction = Math.min(3, state.vassals.vrrk.count);
+  return Math.max(2, state.baseWarHours - reduction);
+}
+
+function attackRegion(regionId) {
+  var r = findRegion(regionId);
+  var check = canAttack(r);
+  if (!check.ok) return;
+  state.mechBros -= 3;
+  var durationSec = effectiveWarHours() * 3600;
+  state.activeWars.push({
+    regionId: r.id,
+    startTime: Date.now(),
+    duration: durationSec,
+    mechBrosCommitted: 3,
+  });
+  toast('&#9876; "' + r.name + '" uzerine sefer baslatildi (' + effectiveWarHours() + 'h)');
+  renderMap();
+  renderRegionInfo();
+  updateWarBadge();
+}
+
+function checkWarsComplete() {
+  var now = Date.now();
+  var completed = [];
+  for (var i = 0; i < state.activeWars.length; i++) {
+    var elapsed = (now - state.activeWars[i].startTime) / 1000;
+    if (elapsed >= state.activeWars[i].duration) completed.push(state.activeWars[i]);
+  }
+  for (var j = 0; j < completed.length; j++) {
+    var w = completed[j];
+    var r = findRegion(w.regionId);
+    r.owner = 'player';
+    var newWars = [];
+    for (var k = 0; k < state.activeWars.length; k++) {
+      if (state.activeWars[k] !== w) newWars.push(state.activeWars[k]);
+    }
+    state.activeWars = newWars;
+    if (!state.firstConquestAt) state.firstConquestAt = (Date.now() - state.startTime) / 1000;
+    toast('&#127942; "' + r.name + '" fethedildi!');
+    renderMap();
+    renderRegionInfo();
+    updateWarBadge();
+  }
+}
+
+function updateWarBadge() {
+  var badge = document.getElementById('war-badge');
+  var anyComplete = false;
+  var anyActive = state.activeWars.length > 0;
+  for (var i = 0; i < state.activeWars.length; i++) {
+    if ((Date.now() - state.activeWars[i].startTime) / 1000 >= state.activeWars[i].duration) {
+      anyComplete = true; break;
+    }
+  }
+  if (anyComplete) {
+    badge.style.display = 'inline-block';
+    badge.textContent = '!';
+    badge.style.background = '#40a040';
+  } else if (anyActive) {
+    badge.style.display = 'inline-block';
+    badge.textContent = state.activeWars.length;
+    badge.style.background = '#c04040';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ============ ECONOMY ============
+function vassalCost(key) {
+  var v = state.vassals[key];
+  return Math.round(v.baseCost * Math.pow(v.mult, v.count));
+}
+
+function ratePerSec() {
+  var crystal = dimCrystalRate();
+  var sun = 0, pepper = 0;
+  var sunRegions = countOwnedRegions('sun');
+  var pepperRegions = countOwnedRegions('pepper');
+  if (sunRegions > 0) {
+    sun += sunRegions * REGION_SUN_BASE_YIELD;
+    sun += state.vassals.brglx.count * BRGLX_SUN_PRODUCTION;
+  }
+  if (pepperRegions > 0) {
+    var zyxBuff = 1 + ZYX_SELF_COMPOUND * state.vassals.zyx.count;
+    pepper += pepperRegions * REGION_PEPPER_BASE_YIELD;
+    pepper += state.vassals.zyx.count * ZYX_PEPPER_BASE_PROD * zyxBuff;
+  }
+  return { crystal: crystal, sun: sun, pepper: pepper };
+}
+
+function isVassalUnlocked(key) {
+  if (key === 'formsworth') return true;
+  if (key === 'brglx') return state.vassals.formsworth.count >= 10 && countOwnedRegions('sun') > 0;
+  if (key === 'zyx') return countOwnedRegions('pepper') > 0;
+  if (key === 'vrrk') return state.firstConquestAt !== null;
+  return false;
+}
+
+function buyVassal(key) {
+  var cost = vassalCost(key);
+  if (state.crystal < cost) return;
+  if (!isVassalUnlocked(key)) return;
+  state.crystal -= cost;
+  state.vassals[key].count++;
+
+  if (key === 'formsworth' && state.vassals.formsworth.count === 1) {
+    state.firstFormsworthAt = (Date.now() - state.startTime) / 1000;
+    toast('&#128203; Formsworth is here. Crystal +12%!');
+    document.getElementById('hint').textContent = 'vassal calisiyor -- tiklamayi surdurebilirsin';
+  }
+  if (key === 'formsworth' && state.vassals.formsworth.count === 10) {
+    toast('&#9728; Sun bolgesi fethedersen Brglx acilir.');
+  }
+  if (key === 'vrrk' && state.vassals.vrrk.count === 1) {
+    toast('&#9876; Vrrk goreve basladi. Savas timeri kisaldi.');
+  }
+}
+
+function convertCrystal(amount) {
+  var cost = 100 * amount;
+  if (state.crystal < cost) return;
+  state.crystal -= cost;
+  state.redpill += amount;
+  if (amount >= 10) toast('&#128138; ' + amount + ' Red Pill uretildi.');
+}
+
+function buyMech() {
+  if (state.redpill < 5) return;
+  state.redpill -= 5;
+  state.mechBros++;
+}
+
+// ============ CLICK ============
+function clickOrb(ev) {
+  var clickValue = 1;
+  state.crystal += clickValue;
+  state.totalEarned += clickValue;
+  state.clicks++;
+
+  var area = document.getElementById('clickArea');
+  var rect = area.getBoundingClientRect();
+  var clientX = ev.changedTouches ? ev.changedTouches[0].clientX : (ev.clientX || rect.width / 2);
+  var clientY = ev.changedTouches ? ev.changedTouches[0].clientY : (ev.clientY || rect.height / 2);
+  var x = clientX - rect.left;
+  var y = clientY - rect.top;
+  var f = document.createElement('div');
+  f.className = 'float-num';
+  f.textContent = '+1';
+  f.style.left = (x - 10) + 'px';
+  f.style.top = (y - 10) + 'px';
+  area.appendChild(f);
+  setTimeout(function() { if (f.parentNode) f.parentNode.removeChild(f); }, 1000);
+}
+
+// ============ TICK ============
+var lastTick = performance.now();
+function tick() {
+  var now = performance.now();
+  var dt = (now - lastTick) / 1000;
+  lastTick = now;
+
+  // Dimension cascade: tier N produces tier N-1 owned count per second
+  for (var i = 7; i >= 1; i--) {
+    state.dimensions[i - 1].owned += state.dimensions[i].owned * DIMENSION_BASE_PROD[i] * dimMultiplier(i) * dt;
+  }
+  var crystalProd = dimCrystalRate() * dt;
+  state.crystal += crystalProd;
+  state.totalEarned += crystalProd;
+
+  var r = ratePerSec();
+  state.sun += r.sun * dt;
+  state.pepper += r.pepper * dt;
+
+  checkWarsComplete();
+  render();
+  requestAnimationFrame(tick);
+}
+
+// ============ RENDER ============
+function fmt(n) {
+  if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+  if (n >= 10) return Math.floor(n).toString();
+  return n.toFixed(1);
+}
+
+function formatTime(seconds) {
+  if (seconds < 60) return Math.ceil(seconds) + 'sn';
+  if (seconds < 3600) return Math.floor(seconds / 60) + 'dk ' + Math.floor(seconds % 60) + 'sn';
+  var h = Math.floor(seconds / 3600);
+  var m = Math.floor((seconds % 3600) / 60);
+  return h + 'h ' + m + 'dk';
+}
+
+function render() {
+  var r = ratePerSec();
+  document.getElementById('amt-crystal').textContent = fmt(state.crystal);
+  document.getElementById('rate-crystal').textContent = fmt(r.crystal) + '/sn';
+  document.getElementById('amt-sun').textContent = fmt(state.sun);
+  document.getElementById('rate-sun').textContent = fmt(r.sun) + '/sn';
+  document.getElementById('amt-pepper').textContent = fmt(state.pepper);
+  document.getElementById('rate-pepper').textContent = fmt(r.pepper) + '/sn';
+  document.getElementById('amt-redpill').textContent = fmt(state.redpill);
+
+  document.getElementById('res-sun').classList.toggle('locked', countOwnedRegions('sun') === 0);
+  document.getElementById('res-pepper').classList.toggle('locked', countOwnedRegions('pepper') === 0);
+  document.getElementById('res-redpill').classList.toggle('locked', state.crystal < 100 && state.redpill === 0);
+
+  // Buy mode buttons
+  document.getElementById('mode-btn-1').classList.toggle('active', state.dimBuyMode === 1);
+  document.getElementById('mode-btn-10').classList.toggle('active', state.dimBuyMode === 10);
+
+  // Dimension rows
+  var modeLabel = state.dimBuyMode === 1 ? 'x1' : '-&gt;10';
+  var dimHtml = '';
+  for (var di = 0; di < 8; di++) {
+    var d = state.dimensions[di];
+    var dcost = dimCurrentCost(di);
+    var dmult = dimMultiplier(di);
+    var canAfford = state.crystal >= dcost;
+    var progressInGroup = d.purchased % DIMENSION_MULTIPLIER_THRESHOLD;
+    var prodLabel = di === 0
+      ? fmt(d.owned * DIMENSION_BASE_PROD[0] * dmult) + '/sn &#9670;'
+      : fmt(d.owned * DIMENSION_BASE_PROD[di] * dmult) + '/sn T' + di;
+    dimHtml += '<div class="dim-row' + (canAfford ? ' affordable' : '') + '">'
+      + '<div class="dim-tier">T' + (di + 1) + '</div>'
+      + '<div class="dim-info">'
+      + '<div class="dim-name">' + DIMENSION_NAMES[di] + '</div>'
+      + '<div class="dim-flavor">' + DIMENSION_FLAVORS[di] + '</div>'
+      + '<div class="dim-stats">'
+      + '<span style="color:#80e080">x' + dmult.toFixed(1) + '</span>'
+      + ' &nbsp; <span style="color:#c0d0ff">' + fmt(d.owned) + '</span>'
+      + ' <span style="color:#6070a0">(' + progressInGroup + '/' + DIMENSION_MULTIPLIER_THRESHOLD + ')</span>'
+      + ' &nbsp; ' + prodLabel
+      + '</div>'
+      + '</div>'
+      + '<div class="dim-btns">'
+      + '<button class="dim-buy-btn' + (canAfford ? ' affordable' : '') + '" onclick="buyDim(' + di + ')" ' + (canAfford ? '' : 'disabled') + '>'
+      + modeLabel + '<small>' + fmt(dcost) + ' &#9670;</small>'
+      + '</button>'
+      + '</div>'
+      + '</div>';
+  }
+  document.getElementById('dim-container').innerHTML = dimHtml;
+
+  var vassalKeys = ['formsworth', 'brglx', 'zyx', 'vrrk'];
+  for (var vi = 0; vi < vassalKeys.length; vi++) {
+    var key = vassalKeys[vi];
+    var cost = vassalCost(key);
+    var el = document.getElementById('vassal-' + key);
+    var btn = document.getElementById('buy-' + key);
+    document.getElementById('cost-' + key).textContent = fmt(cost) + ' &#9670;';
+    var countEl = document.getElementById('count-' + key);
+    countEl.textContent = state.vassals[key].count > 0 ? 'x' + state.vassals[key].count : '';
+
+    if (!isVassalUnlocked(key)) {
+      el.classList.add('locked');
+      el.classList.remove('affordable');
+      btn.disabled = true;
+    } else {
+      el.classList.remove('locked');
+      btn.disabled = state.crystal < cost;
+      el.classList.toggle('affordable', state.crystal >= cost);
+    }
+  }
+
+  document.getElementById('mech-count').textContent = 'x' + state.mechBros;
+  document.getElementById('buy-mech').disabled = state.redpill < 5;
+  document.getElementById('convert-1').disabled = state.crystal < 100;
+  document.getElementById('convert-10').disabled = state.crystal < 1000;
+
+  var warsCont = document.getElementById('active-wars-container');
+  if (state.activeWars.length > 0) {
+    var wHtml = '<div class="section-title">Aktif Savaslar</div>';
+    for (var wi = 0; wi < state.activeWars.length; wi++) {
+      var w = state.activeWars[wi];
+      var reg = findRegion(w.regionId);
+      var elapsed = (Date.now() - w.startTime) / 1000;
+      var remaining = Math.max(0, w.duration - elapsed);
+      var pct = Math.min(100, (elapsed / w.duration) * 100);
+      var done = remaining <= 0;
+      wHtml += '<div class="war-row">'
+        + '<div style="display:flex; justify-content:space-between; align-items:center;">'
+        + '<div style="font-size:12px; font-weight:600;">&#9876; ' + reg.name + '</div>'
+        + '<div style="font-size:10px; color:' + (done ? '#80c080' : '#c08080') + ';">' + (done ? 'TAMAMLANDI' : formatTime(remaining)) + '</div>'
+        + '</div>'
+        + '<div class="timer-bar">'
+        + '<div class="timer-fill" style="width:' + pct + '%"></div>'
+        + '<div class="timer-label">' + (done ? '&#10003; FETHEDILDI' : Math.floor(pct) + '%') + '</div>'
+        + '</div>'
+        + '</div>';
+    }
+    warsCont.innerHTML = wHtml;
+  } else {
+    warsCont.innerHTML = '';
+  }
+
+  var elapsed2 = (Date.now() - state.startTime) / 1000;
+  var dimSummary = '';
+  for (var si = 0; si < 8; si++) dimSummary += 'T' + (si+1) + ':' + fmt(state.dimensions[si].owned) + ' ';
+  document.getElementById('stats').innerHTML =
+    '<div><span>elapsed:</span><strong>' + formatTime(elapsed2) + '</strong></div>'
+    + '<div><span>clicks:</span><strong>' + state.clicks + '</strong></div>'
+    + '<div><span>1. Boyut:</span><strong>' + (state.firstDimensionAt ? formatTime(state.firstDimensionAt) : '--') + '</strong></div>'
+    + '<div><span>1. Fetih:</span><strong>' + (state.firstConquestAt ? formatTime(state.firstConquestAt) : '--') + '</strong></div>'
+    + '<div><span>Crystal/sn:</span><strong>' + fmt(r.crystal) + '</strong></div>'
+    + '<div><span>toplam Crystal:</span><strong>' + fmt(state.totalEarned) + '</strong></div>'
+    + '<div style="font-size:8px"><span>dims:</span><strong>' + dimSummary + '</strong></div>';
+}
+
+function toast(msg) {
+  var t = document.createElement('div');
+  t.className = 'event-toast';
+  t.innerHTML = msg;
+  document.getElementById('events').appendChild(t);
+  setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 3700);
+}
+
+function resetGame() {
+  location.reload();
+}
+
+function cheatBoost() { state.crystal += 10000; toast('+10K Crystal'); }
+function cheatTimeWarp() {
+  for (var i = 0; i < state.activeWars.length; i++) state.activeWars[i].startTime -= 3600 * 1000;
+  toast('Aktif savaslardan 1h dusuldu');
+}
+
+// ============ TABS ============
+var tabs = document.querySelectorAll('.tab');
+for (var ti = 0; ti < tabs.length; ti++) {
+  (function(tab) {
+    tab.addEventListener('click', function() {
+      for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+      var pages = document.querySelectorAll('.page');
+      for (var j = 0; j < pages.length; j++) pages[j].classList.remove('active');
+      tab.classList.add('active');
+      document.getElementById('page-' + tab.dataset.tab).classList.add('active');
+      if (tab.dataset.tab === 'map') { renderMap(); renderRegionInfo(); }
+    });
+  })(tabs[ti]);
+}
+
+// ============ WIRE UP ============
+var clickArea = document.getElementById('clickArea');
+clickArea.addEventListener('touchstart', function(e) { e.preventDefault(); clickOrb(e); }, { passive: false });
+clickArea.addEventListener('click', clickOrb);
+
+document.getElementById('buy-formsworth').addEventListener('click', function() { buyVassal('formsworth'); });
+document.getElementById('buy-brglx').addEventListener('click', function() { buyVassal('brglx'); });
+document.getElementById('buy-zyx').addEventListener('click', function() { buyVassal('zyx'); });
+document.getElementById('buy-vrrk').addEventListener('click', function() { buyVassal('vrrk'); });
+
+renderMap();
+renderRegionInfo();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
