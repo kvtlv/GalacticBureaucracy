@@ -457,6 +457,11 @@ var CONFIG = {
     zyx:   { baseCost: 5000, costMult: 1.18, pepperPerLevel: 0.5, selfCompound: 0.20 },
     vrrk:  { baseCost: 2500, costMult: 1.20, warReductionMax: 3 },
   },
+  upgrades: [
+    { id:'crystalOverclock', name:'Crystal Overclock', desc:'+10% CC/s per level',         baseCost:100, effectPerLvl:0.10, costGrowth:2.0 },
+    { id:'expeditedWarfare', name:'Expedited Warfare',  desc:'−5% war timer per level', baseCost:250, effectPerLvl:0.05, costGrowth:2.0 },
+    { id:'bulkEnlistment',   name:'Bulk Enlistment',    desc:'−4% Red Pill cost/level', baseCost:200, effectPerLvl:0.04, costGrowth:2.0 },
+  ],
 };
 
 // ============ STATE ============
@@ -600,6 +605,21 @@ function checkUnlocks() {
   }
 }
 
+// ============ UPGRADE SYSTEM ============
+function upgCost(u) {
+  return u.baseCost * Math.pow(u.costGrowth, state.upgLevels[u.id]);
+}
+
+function buyUpgrade(id) {
+  var u = null;
+  for (var i = 0; i < CONFIG.upgrades.length; i++) {
+    if (CONFIG.upgrades[i].id === id) { u = CONFIG.upgrades[i]; break; }
+  }
+  if (!u || state.cc < upgCost(u)) return;
+  state.cc -= upgCost(u);
+  state.upgLevels[id]++;
+}
+
 // ============ MAP ============
 function countOwnedRegions(type) {
   var n = 0;
@@ -731,7 +751,7 @@ function renderRegionInfo() {
 
 function effectiveWarHours() {
   var vrrkReduction = Math.min(CONFIG.vassals.vrrk.warReductionMax, state.vassals.vrrk.count);
-  // Chunk C adds: vrrkReduction += state.upgLevels.expeditedWarfare * CONFIG.war.baseTimerHrs * 0.05
+  vrrkReduction += state.upgLevels.expeditedWarfare * CONFIG.war.baseTimerHrs * 0.05; // Expedited Warfare
   return Math.max(2, CONFIG.war.baseTimerHrs - vrrkReduction);
 }
 
@@ -831,8 +851,7 @@ function convertCC(amount) {
 }
 
 function buyMech() {
-  var cost = CONFIG.redpill.redPillPerMech;
-  // Chunk C: cost = Math.ceil(cost * (1 - state.upgLevels.bulkEnlistment * 0.04));
+  var cost = Math.max(1, Math.ceil(CONFIG.redpill.redPillPerMech * (1 - state.upgLevels.bulkEnlistment * 0.04))); // Bulk Enlistment
   if (state.redpill < cost) return;
   state.redpill -= cost;
   state.mechBros++;
@@ -962,6 +981,61 @@ function setupDOM() {
       container.appendChild(row);
     })(CONFIG.generators[gi], gi);
   }
+
+  // Upgrade cards — created once; render() updates textContent/className
+  var upgContainer = document.getElementById('upgrade-container');
+  var upgTitle = document.createElement('div');
+  upgTitle.className = 'section-title';
+  upgTitle.style.marginTop = '16px';
+  upgTitle.textContent = 'Upgrades';
+  upgContainer.appendChild(upgTitle);
+
+  for (var ui = 0; ui < CONFIG.upgrades.length; ui++) {
+    (function(u) {
+      var card = document.createElement('div');
+      card.id        = 'upg-row-' + u.id;
+      card.className = 'vassal';
+
+      var infoEl = document.createElement('div');
+      infoEl.className = 'vassal-info';
+
+      var nameEl = document.createElement('div');
+      nameEl.className = 'vassal-name';
+      nameEl.appendChild(document.createTextNode(u.name + ' '));
+      var lvlSpan = document.createElement('span');
+      lvlSpan.className = 'count';
+      lvlSpan.id        = 'upg-level-' + u.id;
+      nameEl.appendChild(lvlSpan);
+
+      var descEl = document.createElement('div');
+      descEl.className   = 'vassal-flavor';
+      descEl.textContent = u.desc;
+
+      var effectEl = document.createElement('div');
+      effectEl.className = 'vassal-effect';
+      effectEl.id        = 'upg-effect-' + u.id;
+      effectEl.textContent = 'No effect yet';
+
+      infoEl.appendChild(nameEl);
+      infoEl.appendChild(descEl);
+      infoEl.appendChild(effectEl);
+
+      var buyBtn = document.createElement('button');
+      buyBtn.className = 'vassal-buy';
+      buyBtn.id        = 'upg-buy-' + u.id;
+      buyBtn.appendChild(document.createTextNode('Lv↑'));
+      var costSmall = document.createElement('small');
+      costSmall.id = 'upg-cost-' + u.id;
+      buyBtn.appendChild(costSmall);
+      buyBtn.addEventListener('click', (function(uId) {
+        return function() { buyUpgrade(uId); };
+      })(u.id));
+
+      card.appendChild(infoEl);
+      card.appendChild(buyBtn);
+      upgContainer.appendChild(card);
+    })(CONFIG.upgrades[ui]);
+  }
 }
 
 // ============ RENDER ============
@@ -1040,6 +1114,23 @@ function render() {
       btn.disabled = state.cc < cost2;
       el.classList.toggle('affordable', state.cc >= cost2);
     }
+  }
+
+  // Upgrades
+  for (var ui2 = 0; ui2 < CONFIG.upgrades.length; ui2++) {
+    var u        = CONFIG.upgrades[ui2];
+    var uCost    = upgCost(u);
+    var uLevel   = state.upgLevels[u.id];
+    var uAfford  = state.cc >= uCost;
+    document.getElementById('upg-row-'   + u.id).classList.toggle('affordable', uAfford);
+    document.getElementById('upg-buy-'   + u.id).disabled  = !uAfford;
+    document.getElementById('upg-level-' + u.id).textContent = uLevel > 0 ? 'Lv' + uLevel : '';
+    document.getElementById('upg-cost-'  + u.id).textContent = fmt(uCost) + ' ◆';
+    var eff = '';
+    if (u.id === 'crystalOverclock')  eff = uLevel > 0 ? '+' + (uLevel * 10) + '% CC/s active' : 'No effect yet';
+    if (u.id === 'expeditedWarfare')  eff = uLevel > 0 ? '−' + Math.round(uLevel * CONFIG.war.baseTimerHrs * 5) / 10 + 'h war timer' : 'No effect yet';
+    if (u.id === 'bulkEnlistment')    eff = uLevel > 0 ? '−' + (uLevel * 4) + '% Mech cost (' + Math.max(1, Math.ceil(CONFIG.redpill.redPillPerMech * (1 - uLevel * 0.04))) + ' RP)' : 'No effect yet';
+    document.getElementById('upg-effect-' + u.id).textContent = eff;
   }
 
   // War: convert/mech buttons
