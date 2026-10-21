@@ -7,6 +7,19 @@
 
 ---
 
+## Implementation Note — `genPurchased` vs. `genCounts` (game.html)
+
+The simulator prices the next purchase as `base_cost × 1.25^floor(genCounts[id])`, where
+`genCounts` includes fractionally-produced units from the compound chain. **game.html uses a
+separate `genPurchased` counter** (integer, manual buys only) as the cost exponent instead.
+This is a conscious deviation: counting fractional produced units in the price would
+penalise players who progressed naturally through idle play. In practice the difference is
+small early-game but widens at high generator counts. If playtesting shows generators feel
+too cheap in late-stage runs, switch the exponent to `Math.floor(state.genCounts[id])` and
+re-validate against the sim.
+
+---
+
 ## 0. The tuning workflow (read first)
 
 1. Open `galactic_bureaucracy_economy.xlsx`. All tunable cells are **blue on yellow** in the
