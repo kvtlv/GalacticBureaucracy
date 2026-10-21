@@ -875,6 +875,104 @@ function clickOrb(ev) {
   setTimeout(function() { if (f.parentNode) f.parentNode.removeChild(f); }, 1000);
 }
 
+// ============ SAVE / LOAD / OFFLINE ============
+var SAVE_KEY = 'gb_save_v2';
+
+// Applies offline accrual in 1-hour sub-steps at 50% efficiency for compound accuracy.
+// Returns CC earned during the offline period.
+function applyOffline(totalSec) {
+  var stepSec   = 3600;
+  var eff       = CONFIG.offline.efficiency;
+  var ccBefore  = state.cc;
+  var remaining = totalSec;
+  while (remaining > 0) {
+    var step = Math.min(remaining, stepSec);
+    advanceCompound(step * eff);
+    var r = ratePerSec();
+    state.sun     += r.sun    * step * eff;
+    state.pepper  += r.pepper * step * eff;
+    state.redpill += Math.min(ccPerSec() * CONFIG.redpill.primerRate, CONFIG.redpill.primerCap) * step * eff;
+    remaining -= step;
+  }
+  checkUnlocks();  // offline progress may cross a milestone
+  return state.cc - ccBefore;
+}
+
+function saveGame() {
+  try {
+    var save = {
+      version:          2,
+      savedAt:          Date.now(),
+      cc:               state.cc,
+      lifetimeCC:       state.lifetimeCC,
+      sun:              state.sun,
+      pepper:           state.pepper,
+      redpill:          state.redpill,
+      mechBros:         state.mechBros,
+      clicks:           state.clicks,
+      startTime:        state.startTime,
+      firstGenAt:       state.firstGenAt,
+      firstConquestAt:  state.firstConquestAt,
+      genUnlockToasted: state.genUnlockToasted,
+      genCounts:        state.genCounts,
+      genPurchased:     state.genPurchased,
+      upgLevels:        state.upgLevels,
+      vassals:          state.vassals,
+      // Save only owner per region (static data — positions, connections — stays in code)
+      regions:          state.regions.map(function(r) { return { id: r.id, owner: r.owner }; }),
+      activeWars:       state.activeWars,
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+  } catch(e) {
+    // Storage unavailable (private mode, quota) — game continues without saving
+  }
+}
+
+function loadGame() {
+  try {
+    var raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return false;
+    var save = JSON.parse(raw);
+    if (!save || save.version !== 2) return false;
+
+    state.cc              = save.cc              || 0;
+    state.lifetimeCC      = save.lifetimeCC      || 0;
+    state.sun             = save.sun             || 0;
+    state.pepper          = save.pepper          || 0;
+    state.redpill         = save.redpill         || 0;
+    state.mechBros        = save.mechBros        || 0;
+    state.clicks          = save.clicks          || 0;
+    state.startTime       = save.startTime       || Date.now();
+    state.firstGenAt      = save.firstGenAt      || null;
+    state.firstConquestAt = save.firstConquestAt || null;
+    state.genUnlockToasted = save.genUnlockToasted || {};
+    if (save.genCounts)    state.genCounts    = save.genCounts;
+    if (save.genPurchased) state.genPurchased = save.genPurchased;
+    if (save.upgLevels)    state.upgLevels    = save.upgLevels;
+    if (save.vassals)      state.vassals      = save.vassals;
+    if (save.activeWars)   state.activeWars   = save.activeWars;
+
+    if (save.regions) {
+      for (var i = 0; i < save.regions.length; i++) {
+        var sr = findRegion(save.regions[i].id);
+        if (sr) sr.owner = save.regions[i].owner;
+      }
+    }
+
+    // Offline accrual: time since last save, capped at 8h
+    var offlineSec = (Date.now() - save.savedAt) / 1000;
+    if (offlineSec > 30) {
+      offlineSec = Math.min(offlineSec, CONFIG.offline.capHours * 3600);
+      var earned = applyOffline(offlineSec);
+      toast('Welcome back! Away ' + formatTime(offlineSec) + '. +' + fmt(earned) + ' CC while idle.');
+    }
+
+    return true;
+  } catch(e) {
+    return false;  // corrupt save — start fresh
+  }
+}
+
 // ============ TICK ============
 var lastTick = performance.now();
 
@@ -883,9 +981,16 @@ function tick() {
   var dt  = (now - lastTick) / 1000;
   lastTick = now;
 
-  // Cap dt: large gaps come from backgrounding — those will be handled by the offline
-  // accrual path (Chunk D: 50% efficiency, hourly sub-steps). Until then, just cap.
-  if (dt > 0.25) dt = 0.25;
+  // Large dt = returned from background. Route through offline path (50% eff, hourly sub-steps)
+  // rather than applying raw dt directly to the compound chain.
+  if (dt > 0.25) {
+    var offSec = Math.min(dt, CONFIG.offline.capHours * 3600);
+    applyOffline(offSec);
+    checkWarsComplete();
+    render();
+    requestAnimationFrame(tick);
+    return;
+  }
 
   advanceCompound(dt);
   checkUnlocks();
@@ -1209,6 +1314,7 @@ function toast(msg) {
 
 // ============ DEV HELPERS ============
 function resetGame() {
+  try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
   location.reload();
 }
 function cheatBoost()    { state.cc += 10000; state.lifetimeCC += 10000; toast('+10K CC'); }
@@ -1232,6 +1338,13 @@ for (var ti = 0; ti < tabs.length; ti++) {
   })(tabs[ti]);
 }
 
+// ============ SAVE EVENT HOOKS ============
+// Save on tab/window hide so the offline clock starts from actual last-active moment
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) saveGame();
+});
+window.addEventListener('pagehide', saveGame);
+
 // ============ WIRE UP ============
 var clickArea = document.getElementById('clickArea');
 clickArea.addEventListener('touchstart', function(e) { e.preventDefault(); clickOrb(e); }, { passive: false });
@@ -1242,9 +1355,11 @@ document.getElementById('buy-zyx').addEventListener('click', function() { buyVas
 document.getElementById('buy-vrrk').addEventListener('click', function() { buyVassal('vrrk'); });
 
 // ============ INIT ============
-setupDOM();       // generator rows created once; render() updates them
+setupDOM();           // generator rows and upgrade cards created once
+loadGame();           // restore save + apply offline accrual (no-op on fresh start)
 renderMap();
 renderRegionInfo();
+setInterval(saveGame, 30000);  // auto-save every 30s
 requestAnimationFrame(tick);
 </script>
 </body>
