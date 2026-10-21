@@ -255,13 +255,13 @@
 <body>
 
 <h1>Galactic Bureaucracy</h1>
-<div class="subtitle">"Abdication form not approved. Proceed to Window 7-B."</div>
+<div class="subtitle" data-i18n="subtitle">"Abdication form not approved. Proceed to Window 7-B."</div>
 
 <!-- TABS -->
 <div class="tabs">
-  <div class="tab active" data-tab="idle">Empire</div>
-  <div class="tab" data-tab="map">Map</div>
-  <div class="tab" data-tab="war">War <span id="war-badge" class="badge" style="display:none">!</span></div>
+  <div class="tab active" data-tab="idle" data-i18n="tab_idle">Empire</div>
+  <div class="tab" data-tab="map" data-i18n="tab_map">Map</div>
+  <div class="tab" data-tab="war"><span data-i18n="tab_war">War</span> <span id="war-badge" class="badge" style="display:none">!</span></div>
 </div>
 
 <!-- RESOURCE BAR -->
@@ -270,25 +270,25 @@
     <div class="res-icon">&#9670;</div>
     <div class="res-amount" id="amt-crystal">0</div>
     <div class="res-rate" id="rate-crystal">0/s</div>
-    <div class="res-name">Crystal</div>
+    <div class="res-name" data-i18n="res_crystal">Crystal</div>
   </div>
   <div class="res locked" id="res-sun">
     <div class="res-icon">&#9728;</div>
     <div class="res-amount" id="amt-sun">0</div>
     <div class="res-rate" id="rate-sun">0/s</div>
-    <div class="res-name">Sun Drips</div>
+    <div class="res-name" data-i18n="res_sun">Sun Drips</div>
   </div>
   <div class="res locked" id="res-pepper">
     <div class="res-icon">&#127798;</div>
     <div class="res-amount" id="amt-pepper">0</div>
     <div class="res-rate" id="rate-pepper">0/s</div>
-    <div class="res-name">Pepper</div>
+    <div class="res-name" data-i18n="res_pepper">Pepper</div>
   </div>
   <div class="res locked" id="res-redpill">
     <div class="res-icon">&#128138;</div>
     <div class="res-amount" id="amt-redpill">0</div>
     <div class="res-rate" id="rate-redpill">&nbsp;</div>
-    <div class="res-name">Red Pill</div>
+    <div class="res-name" data-i18n="res_redpill">Red Pill</div>
   </div>
 </div>
 
@@ -296,7 +296,7 @@
 <div class="page active" id="page-idle">
   <div class="click-area" id="clickArea">
     <div class="crystal-orb"></div>
-    <div class="click-hint" id="hint">tap the orb &mdash; earn crystal</div>
+    <div class="click-hint" id="hint" data-i18n="hint_tap">tap the orb &mdash; earn crystal</div>
   </div>
 
   <!-- GENERATOR CHAIN (set up once by setupDOM) -->
@@ -310,7 +310,7 @@
   <div id="upgrade-container"></div>
 
   <!-- SPECIAL VASSALS (not in generator chain) -->
-  <div class="section-title" style="margin-top:16px;">Vassals</div>
+  <div class="section-title" style="margin-top:16px;" data-i18n="sec_vassals">Vassals</div>
 
   <div class="vassal locked" id="vassal-brglx" data-key="brglx">
     <div class="vassal-icon">&#9728;</div>
@@ -354,24 +354,24 @@
 
 <!-- MAP PAGE -->
 <div class="page" id="page-map">
-  <div class="section-title">Galactic Map</div>
+  <div class="section-title" data-i18n="sec_map">Galactic Map</div>
   <svg id="map-svg" viewBox="0 0 400 360"></svg>
   <div class="region-info" id="region-info">
-    <div class="name">Select a region</div>
-    <div class="desc">Tap nodes to inspect regions. Your territories produce resources; attack enemies to expand.</div>
+    <div class="name" data-i18n="region_select">Select a region</div>
+    <div class="desc" data-i18n="region_select_desc">Tap nodes to inspect regions. Your territories produce resources; attack enemies to expand.</div>
   </div>
 </div>
 
 <!-- WAR PAGE -->
 <div class="page" id="page-war">
-  <div class="section-title">War Command</div>
+  <div class="section-title" data-i18n="sec_war">War Command</div>
 
   <div class="war-row">
-    <div style="font-size:11px; color:#a0a0c8; margin-bottom:6px;">Red Pill — manual conversion (bootstrap)</div>
+    <div style="font-size:11px; color:#a0a0c8; margin-bottom:6px;" data-i18n="war_redpill_desc">Red Pill — manual conversion (bootstrap)</div>
     <div class="war-converter">
       <div style="flex:1; font-size:11px;">
         100 &#9670; &rarr; 1 &#128138;<br>
-        <span style="color:#80a0d0; font-size:10px;">Auto-primer also generates RP up to 2/s.</span>
+        <span style="color:#80a0d0; font-size:10px;" data-i18n="war_primer_note">Auto-primer also generates RP up to 2/s.</span>
       </div>
       <button class="convert-btn" id="convert-1" onclick="convertCC(1)">x1<br><small>100 &#9670;</small></button>
       <button class="convert-btn" id="convert-10" onclick="convertCC(10)">x10<br><small>1K &#9670;</small></button>
@@ -379,22 +379,22 @@
   </div>
 
   <div class="war-row">
-    <div style="font-size:11px; color:#a0a0c8; margin-bottom:6px;">Mech-Bro Enlistment</div>
+    <div style="font-size:11px; color:#a0a0c8; margin-bottom:6px;" data-i18n="war_mech_desc">Mech-Bro Enlistment</div>
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
       <div style="font-size:22px;">&#129302;</div>
       <div style="flex:1; font-size:11px;">
         Mech-Bro <span id="mech-count">x0</span><br>
-        <span style="color:#6070a0; font-size:10px; font-style:italic;">"Pimply teenager in a mech suit."</span>
+        <span style="color:#6070a0; font-size:10px; font-style:italic;" data-i18n="war_mech_flavor">"Pimply teenager in a mech suit."</span>
       </div>
       <button class="mech-buy" id="buy-mech" onclick="buyMech()">+1 Bro<br><small>25 &#128138;</small></button>
     </div>
-    <div style="font-size:10px; color:#80a0d0;">Each war consumes 8–20 Mech-Bros depending on region.</div>
+    <div style="font-size:10px; color:#80a0d0;" data-i18n="war_mech_cost_note">Each war consumes 8–20 Mech-Bros depending on region.</div>
   </div>
 
   <div id="active-wars-container"></div>
 
-  <div class="section-title">No active wars?</div>
-  <div style="font-size:11px; color:#a0a0c8; line-height:1.5;">
+  <div class="section-title" data-i18n="war_no_wars_title">No active wars?</div>
+  <div style="font-size:11px; color:#a0a0c8; line-height:1.5;" data-i18n="war_no_wars_desc">
     Go to the Map, select an enemy region, hit Attack. A 6h timer starts &mdash; the idle economy runs while you wait.
   </div>
 </div>
@@ -458,11 +458,169 @@ var CONFIG = {
     vrrk:  { baseCost: 2500, costMult: 1.20, warReductionMax: 3 },
   },
   upgrades: [
-    { id:'crystalOverclock', name:'Crystal Overclock', desc:'+10% CC/s per level',         baseCost:100, effectPerLvl:0.10, costGrowth:2.0 },
-    { id:'expeditedWarfare', name:'Expedited Warfare',  desc:'−5% war timer per level', baseCost:250, effectPerLvl:0.05, costGrowth:2.0 },
-    { id:'bulkEnlistment',   name:'Bulk Enlistment',    desc:'−4% Red Pill cost/level', baseCost:200, effectPerLvl:0.04, costGrowth:2.0 },
+    { id:'crystalOverclock', name:'Crystal Overclock', desc:'+10% CC/s per level',         baseCost:100, effectPerLvl:0.10, costGrowth:2.0, strDescKey:'upg_desc_cc'   },
+    { id:'expeditedWarfare', name:'Expedited Warfare',  desc:'−5% war timer per level', baseCost:250, effectPerLvl:0.05, costGrowth:2.0, strDescKey:'upg_desc_war'  },
+    { id:'bulkEnlistment',   name:'Bulk Enlistment',    desc:'−4% Red Pill cost/level', baseCost:200, effectPerLvl:0.04, costGrowth:2.0, strDescKey:'upg_desc_mech' },
   ],
 };
+
+// ============ STRINGS (i18n) ============
+// All user-visible text lives here. Default lang = 'en'.
+// To switch: set lang = 'tr' before applyStrings().
+var STRINGS = {
+  en: {
+    subtitle:           '"Abdication form not approved. Proceed to Window 7-B."',
+    tab_idle:           'Empire',
+    tab_map:            'Map',
+    tab_war:            'War',
+    res_crystal:        'Crystal',
+    res_sun:            'Sun Drips',
+    res_pepper:         'Pepper',
+    res_redpill:        'Red Pill',
+    sec_generators:     'Generators',
+    sec_upgrades:       'Upgrades',
+    sec_vassals:        'Vassals',
+    sec_map:            'Galactic Map',
+    sec_war:            'War Command',
+    sec_active_wars:    'Active Wars',
+    hint_tap:           'tap the orb — earn crystal',
+    hint_working:       'vassal working — keep tapping or wait',
+    war_redpill_desc:   'Red Pill — manual conversion (bootstrap)',
+    war_primer_note:    'Auto-primer also generates RP up to 2/s.',
+    war_mech_desc:      'Mech-Bro Enlistment',
+    war_mech_flavor:    '"Pimply teenager in a mech suit."',
+    war_mech_cost_note: 'Each war consumes 8–20 Mech-Bros depending on region.',
+    war_no_wars_title:  'No active wars?',
+    war_no_wars_desc:   'Go to the Map, select an enemy region, hit Attack. A 6h timer starts — the idle economy runs while you wait.',
+    region_select:      'Select a region',
+    region_select_desc: 'Tap nodes to inspect regions. Your territories produce resources; attack enemies to expand.',
+    region_crystal:     'Crystal core',
+    region_sun:         'Sun Drips region',
+    region_pepper:      'Pepper Melange region',
+    region_capital:     'NPC Capital',
+    region_yours:       '✓ Yours',
+    region_enemy:       '✗ Enemy',
+    region_homeworld:   'Homeworld. Cyber Crystal production flows from here through the empire.',
+    region_sun_desc:    'Capture this to start Sun Drips income.',
+    region_pepper_desc: 'Capture this to start Pepper Melange income.',
+    region_capital_desc:'NPC capital — future milestone reward.',
+    region_war_progress:'War in progress',
+    region_remaining:   'remaining',
+    region_harvest:     'Harvest',
+    region_vassal_note: '. Vassal automation increases this.',
+    attack_yours:       'Already yours.',
+    attack_in_progress: 'War already in progress.',
+    attack_no_adjacent: 'No adjacent owned territory.',
+    attack_need_mechs:  'Mech-Bros required',
+    toast_first_gen:    '◆ First generator deployed. Crystal flowing.',
+    toast_unlock_pre:   '\U0001f513 ',
+    toast_unlock_suf:   ' unlocked! (T',
+    toast_unlock_end:   ')',
+    toast_welcome_pre:  'Welcome back! Away ',
+    toast_welcome_suf:  '. +',
+    toast_welcome_end:  ' CC while idle.',
+    toast_conquest_suf: ' conquered!',
+    toast_war_pre:      '⚔ Campaign launched on "',
+    toast_war_suf:      '" (',
+    toast_war_end:      'h)',
+    toast_vrrk:         '⚔ Vrrk on duty. War timer shortened.',
+    toast_redpill_suf:  ' Red Pill produced.',
+    toast_cheat_cc:     '+10K CC',
+    toast_cheat_time:   'Subtracted 1h from all active wars.',
+    war_timer_done:     'DONE',
+    war_timer_conq:     '✓ CONQUERED',
+    upg_crystalOverclock: 'Crystal Overclock',
+    upg_expeditedWarfare: 'Expedited Warfare',
+    upg_bulkEnlistment:   'Bulk Enlistment',
+    upg_desc_cc:        '+10% CC/s per level',
+    upg_desc_war:       '−5% war timer per level',
+    upg_desc_mech:      '−4% Red Pill cost/level',
+    upg_buy:            'Lv↑',
+    upg_no_effect:      'No effect yet',
+  },
+  tr: {
+    subtitle:           '"Feragat formu onaylanmadı. 7-B penceresine gidin."',
+    tab_idle:           'İdare',
+    tab_map:            'Harita',
+    tab_war:            'Savaş',
+    res_crystal:        'Kristal',
+    res_sun:            'Güneş Damlaları',
+    res_pepper:         'Biber Melanj',
+    res_redpill:        'Kırmızı Hap',
+    sec_generators:     'Jenératörler',
+    sec_upgrades:       'Yükseltmeler',
+    sec_vassals:        'Vassallar',
+    sec_map:            'Galaktik Harita',
+    sec_war:            'Savaş Komuta',
+    sec_active_wars:    'Aktif Savaşlar',
+    hint_tap:           'orb\'a dokun — kristal kazan',
+    hint_working:       'vassal çalışıyor — tıklamaya devam edebilirsin',
+    war_redpill_desc:   'Kırmızı Hap — manuel dönüşüm (bootstrap)',
+    war_primer_note:    'Otomatik primer de 2/s\'ye kadar RP üretir.',
+    war_mech_desc:      'Mech-Bro Askerlik',
+    war_mech_flavor:    '"Mecha suit içinde sivilceli ergen."',
+    war_mech_cost_note: 'Her savaş bölgeye göre 8–20 Mech-Bro tüketir.',
+    war_no_wars_title:  'Aktif savaş yok mu?',
+    war_no_wars_desc:   'Haritaya git, düşman bölge seç, Saldır\'a bas. 6 saatlik timer başlar — beklerken idle ekonomi çalışır.',
+    region_select:      'Bir bölge seç',
+    region_select_desc: 'Haritadaki düğümlere dokun. Bölgeleri incele. Düşmanlarla savaş başlat.',
+    region_crystal:     'Kristal merkez',
+    region_sun:         'Güneş Damlası bölgesi',
+    region_pepper:      'Biber Melanj bölgesi',
+    region_capital:     'NPC Başkenti',
+    region_yours:       '✓ Senin',
+    region_enemy:       '✗ Düşman',
+    region_homeworld:   'Anaerkil gezegen. Kristal üretimi buradan imparatorluğa yayılır.',
+    region_sun_desc:    'Bu bölgeyi al, Güneş Damlaları gelirine başla.',
+    region_pepper_desc: 'Bu bölgeyi al, Biber Melanj gelirine başla.',
+    region_capital_desc:'NPC başkenti — ileriki kilometre taşı ödülü.',
+    region_war_progress:'Savaş devam ediyor',
+    region_remaining:   'kaldı',
+    region_harvest:     'Hasat',
+    region_vassal_note: '. Vassal otomasyonu artırır.',
+    attack_yours:       'Zaten senin.',
+    attack_in_progress: 'Savaş zaten devam ediyor.',
+    attack_no_adjacent: 'Komşu toprak yok.',
+    attack_need_mechs:  'Mech-Bro gerekli',
+    toast_first_gen:    '◆ İlk jenératör görevde. Kristal akıyor.',
+    toast_unlock_pre:   '\U0001f513 ',
+    toast_unlock_suf:   ' açıldı! (T',
+    toast_unlock_end:   ')',
+    toast_welcome_pre:  'Tekrar hoş geldin! Yokluk: ',
+    toast_welcome_suf:  '. +',
+    toast_welcome_end:  ' CC kazandın.',
+    toast_conquest_suf: ' fethedildi!',
+    toast_war_pre:      '⚔ Sefer başlatıldı: "',
+    toast_war_suf:      '" (',
+    toast_war_end:      'h)',
+    toast_vrrk:         '⚔ Vrrk görevde. Savaş timer'ı kısaldı.',
+    toast_redpill_suf:  ' Kırmızı Hap üretildi.',
+    toast_cheat_cc:     '+10B Kristal',
+    toast_cheat_time:   'Tüm aktif savaşlardan 1 saat düşüldü.',
+    war_timer_done:     'TAMAMLANDI',
+    war_timer_conq:     '✓ FETHEDİLDİ',
+    upg_crystalOverclock: 'Kristal Hızlandırma',
+    upg_expeditedWarfare: 'Hızlandırılmış Savaş',
+    upg_bulkEnlistment:   'Toplu Askerlik',
+    upg_desc_cc:        'Seviye başına +%10 CC/s',
+    upg_desc_war:       'Seviye başına -%5 savaş timer'ı',
+    upg_desc_mech:      'Seviye başına -%4 Kırmızı Hap maliyeti',
+    upg_buy:            'Sv↑',
+    upg_no_effect:      'Henüz etki yok',
+  },
+};
+var lang = 'en';
+function t(key) { return STRINGS[lang][key] || STRINGS.en[key] || key; }
+
+// Apply all data-i18n attributes to the DOM; call after setupDOM() on init and after lang change.
+function applyStrings() {
+  var els = document.querySelectorAll('[data-i18n]');
+  for (var i = 0; i < els.length; i++) {
+    var el  = els[i];
+    var key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  }
+}
 
 // ============ STATE ============
 var state = {
@@ -572,8 +730,8 @@ function buyGen(id) {
   state.genPurchased[id]++;
   if (!state.firstGenAt) {
     state.firstGenAt = (Date.now() - state.startTime) / 1000;
-    document.getElementById('hint').textContent = 'vassal working — keep tapping or wait';
-    toast('&#9670; First generator deployed. Crystal flowing.');
+    document.getElementById('hint').textContent = t('hint_working');
+    toast(t('toast_first_gen'));
   }
 }
 
@@ -600,7 +758,7 @@ function checkUnlocks() {
     if (!isGenUnlocked(g)) continue;
     state.genUnlockToasted[g.id] = true;
     if (g.tier > 1) {  // T1 is always unlocked at start — no toast needed
-      toast('&#128275; <strong>' + g.name + '</strong> unlocked! (T' + g.tier + ')');
+      toast(t('toast_unlock_pre') + '<strong>' + g.name + '</strong>' + t('toast_unlock_suf') + g.tier + t('toast_unlock_end'));
     }
   }
 }
@@ -695,45 +853,45 @@ function findWar(regionId) {
 }
 
 function canAttack(region) {
-  if (region.owner === 'player')  return { ok: false, reason: 'Already yours.' };
-  if (findWar(region.id))         return { ok: false, reason: 'War already in progress.' };
+  if (region.owner === 'player')  return { ok: false, reason: t('attack_yours') };
+  if (findWar(region.id))         return { ok: false, reason: t('attack_in_progress') };
   var connected = false;
   for (var i = 0; i < region.connects.length; i++) {
     var c = findRegion(region.connects[i]);
     if (c && c.owner === 'player') { connected = true; break; }
   }
-  if (!connected) return { ok: false, reason: 'No adjacent owned territory.' };
+  if (!connected) return { ok: false, reason: t('attack_no_adjacent') };
   var req = region.mechRequired || 8;
-  if (state.mechBros < req) return { ok: false, reason: req + ' Mech-Bros required (' + state.mechBros + '/' + req + ').' };
+  if (state.mechBros < req) return { ok: false, reason: req + ' ' + t('attack_need_mechs') + ' (' + state.mechBros + '/' + req + ').' };
   return { ok: true };
 }
 
 function renderRegionInfo() {
   var info = document.getElementById('region-info');
   if (!state.selectedRegion) {
-    info.innerHTML = '<div class="name">Select a region</div><div class="desc">Tap nodes on the map to inspect.</div>';
+    info.innerHTML = '<div class="name">' + t('region_select') + '</div><div class="desc">' + t('region_select_desc') + '</div>';
     return;
   }
   var r = findRegion(state.selectedRegion);
-  var typeLabel  = r.type === 'crystal' ? 'Crystal core' : (r.type === 'sun' ? 'Sun Drips region' : (r.type === 'pepper' ? 'Pepper Melange region' : 'NPC Capital'));
+  var typeLabel  = r.type === 'crystal' ? t('region_crystal') : (r.type === 'sun' ? t('region_sun') : (r.type === 'pepper' ? t('region_pepper') : t('region_capital')));
   var ownerLabel = r.owner === 'player'
-    ? '<span style="color:#80c0ff">&#10003; Yours</span>'
-    : '<span style="color:#c08080">&#10007; Enemy</span>';
+    ? '<span style="color:#80c0ff">' + t('region_yours') + '</span>'
+    : '<span style="color:#c08080">' + t('region_enemy') + '</span>';
   var html = '<div class="name">' + r.name + '</div><div class="status">' + typeLabel + ' &mdash; ' + ownerLabel + '</div>';
 
   if (r.owner === 'player' && r.type !== 'crystal' && r.type !== 'capital') {
     var yieldVal = r.type === 'sun' ? CONFIG.regions.sunYield : CONFIG.regions.pepperYield;
     var resName  = r.type === 'sun' ? '&#9728; Sun Drips' : '&#127798; Pepper Melange';
-    html += '<div class="desc">Harvest: +' + yieldVal + '/s ' + resName + '. Vassal automation increases this.</div>';
+    html += '<div class="desc">' + t('region_harvest') + ': +' + yieldVal + '/s ' + resName + t('region_vassal_note') + '</div>';
   } else if (r.owner === 'enemy') {
     var war = findWar(r.id);
     if (war) {
       var elapsed   = (Date.now() - war.startTime) / 1000;
       var remaining = Math.max(0, war.duration - elapsed);
-      html += '<div class="desc">&#9876; War in progress &mdash; ' + formatTime(remaining) + ' remaining.</div>';
+      html += '<div class="desc">&#9876; ' + t('region_war_progress') + ' &mdash; ' + formatTime(remaining) + ' ' + t('region_remaining') + '.</div>';
     } else {
       var check = canAttack(r);
-      var descText = r.type === 'sun' ? 'Capture this to start Sun Drips income.' : (r.type === 'pepper' ? 'Capture this to start Pepper Melange income.' : 'NPC capital &mdash; future milestone reward.');
+      var descText = r.type === 'sun' ? t('region_sun_desc') : (r.type === 'pepper' ? t('region_pepper_desc') : t('region_capital_desc'));
       html += '<div class="desc">' + descText + '</div>';
       if (check.ok) {
         var dur = effectiveWarHours();
@@ -744,7 +902,7 @@ function renderRegionInfo() {
       }
     }
   } else if (r.type === 'crystal') {
-    html += '<div class="desc">Homeworld. Cyber Crystal production flows from here through the empire.</div>';
+    html += '<div class="desc">' + t('region_homeworld') + '</div>';
   }
   info.innerHTML = html;
 }
@@ -763,7 +921,7 @@ function attackRegion(regionId) {
   state.mechBros -= req;
   var durationSec = effectiveWarHours() * 3600;
   state.activeWars.push({ regionId: r.id, startTime: Date.now(), duration: durationSec, mechCommitted: req });
-  toast('&#9876; Campaign launched on "' + r.name + '" (' + effectiveWarHours() + 'h)');
+  toast(t('toast_war_pre') + r.name + t('toast_war_suf') + effectiveWarHours() + t('toast_war_end'));
   renderMap();
   renderRegionInfo();
   updateWarBadge();
@@ -782,7 +940,7 @@ function checkWarsComplete() {
     r.owner = 'player';
     state.activeWars = state.activeWars.filter(function(x) { return x !== w; });
     if (!state.firstConquestAt) state.firstConquestAt = (Date.now() - state.startTime) / 1000;
-    toast('&#127942; "' + r.name + '" conquered!');
+    toast('&#127942; "' + r.name + '"' + t('toast_conquest_suf'));
     renderMap();
     renderRegionInfo();
     updateWarBadge();
@@ -839,7 +997,7 @@ function buyVassal(key) {
   if (state.cc < cost || !isVassalUnlocked(key)) return;
   state.cc -= cost;
   state.vassals[key].count++;
-  if (key === 'vrrk' && state.vassals.vrrk.count === 1) toast('&#9876; Vrrk on duty. War timer shortened.');
+  if (key === 'vrrk' && state.vassals.vrrk.count === 1) toast(t('toast_vrrk'));
 }
 
 function convertCC(amount) {
@@ -847,7 +1005,7 @@ function convertCC(amount) {
   if (state.cc < cost) return;
   state.cc      -= cost;
   state.redpill += amount;
-  if (amount >= 10) toast('&#128138; ' + amount + ' Red Pill produced.');
+  if (amount >= 10) toast('&#128138; ' + amount + t('toast_redpill_suf'));
 }
 
 function buyMech() {
@@ -964,7 +1122,7 @@ function loadGame() {
     if (offlineSec > 30) {
       offlineSec = Math.min(offlineSec, CONFIG.offline.capHours * 3600);
       var earned = applyOffline(offlineSec);
-      toast('Welcome back! Away ' + formatTime(offlineSec) + '. +' + fmt(earned) + ' CC while idle.');
+      toast(t('toast_welcome_pre') + formatTime(offlineSec) + t('toast_welcome_suf') + fmt(earned) + t('toast_welcome_end'));
     }
 
     return true;
@@ -1092,7 +1250,7 @@ function setupDOM() {
   var upgTitle = document.createElement('div');
   upgTitle.className = 'section-title';
   upgTitle.style.marginTop = '16px';
-  upgTitle.textContent = 'Upgrades';
+  upgTitle.textContent = t('sec_upgrades');
   upgContainer.appendChild(upgTitle);
 
   for (var ui = 0; ui < CONFIG.upgrades.length; ui++) {
@@ -1106,7 +1264,7 @@ function setupDOM() {
 
       var nameEl = document.createElement('div');
       nameEl.className = 'vassal-name';
-      nameEl.appendChild(document.createTextNode(u.name + ' '));
+      nameEl.appendChild(document.createTextNode(t('upg_' + u.id) + ' '));
       var lvlSpan = document.createElement('span');
       lvlSpan.className = 'count';
       lvlSpan.id        = 'upg-level-' + u.id;
@@ -1114,12 +1272,12 @@ function setupDOM() {
 
       var descEl = document.createElement('div');
       descEl.className   = 'vassal-flavor';
-      descEl.textContent = u.desc;
+      descEl.textContent = t(u.strDescKey);
 
       var effectEl = document.createElement('div');
       effectEl.className = 'vassal-effect';
       effectEl.id        = 'upg-effect-' + u.id;
-      effectEl.textContent = 'No effect yet';
+      effectEl.textContent = t('upg_no_effect');
 
       infoEl.appendChild(nameEl);
       infoEl.appendChild(descEl);
@@ -1128,7 +1286,7 @@ function setupDOM() {
       var buyBtn = document.createElement('button');
       buyBtn.className = 'vassal-buy';
       buyBtn.id        = 'upg-buy-' + u.id;
-      buyBtn.appendChild(document.createTextNode('Lv↑'));
+      buyBtn.appendChild(document.createTextNode(t('upg_buy')));
       var costSmall = document.createElement('small');
       costSmall.id = 'upg-cost-' + u.id;
       buyBtn.appendChild(costSmall);
@@ -1232,9 +1390,9 @@ function render() {
     document.getElementById('upg-level-' + u.id).textContent = uLevel > 0 ? 'Lv' + uLevel : '';
     document.getElementById('upg-cost-'  + u.id).textContent = fmt(uCost) + ' ◆';
     var eff = '';
-    if (u.id === 'crystalOverclock')  eff = uLevel > 0 ? '+' + (uLevel * 10) + '% CC/s active' : 'No effect yet';
-    if (u.id === 'expeditedWarfare')  eff = uLevel > 0 ? '−' + Math.round(uLevel * CONFIG.war.baseTimerHrs * 5) / 10 + 'h war timer' : 'No effect yet';
-    if (u.id === 'bulkEnlistment')    eff = uLevel > 0 ? '−' + (uLevel * 4) + '% Mech cost (' + Math.max(1, Math.ceil(CONFIG.redpill.redPillPerMech * (1 - uLevel * 0.04))) + ' RP)' : 'No effect yet';
+    if (u.id === 'crystalOverclock')  eff = uLevel > 0 ? '+' + (uLevel * 10) + '% CC/s active' : t('upg_no_effect');
+    if (u.id === 'expeditedWarfare')  eff = uLevel > 0 ? '−' + Math.round(uLevel * CONFIG.war.baseTimerHrs * 5) / 10 + 'h war timer' : t('upg_no_effect');
+    if (u.id === 'bulkEnlistment')    eff = uLevel > 0 ? '−' + (uLevel * 4) + '% Mech cost (' + Math.max(1, Math.ceil(CONFIG.redpill.redPillPerMech * (1 - uLevel * 0.04))) + ' RP)' : t('upg_no_effect');
     document.getElementById('upg-effect-' + u.id).textContent = eff;
   }
 
@@ -1251,7 +1409,7 @@ function render() {
     if (state.activeWars.length === 0) {
       warsCont.innerHTML = '';
     } else {
-      var wHtml = '<div class="section-title">Active Wars</div>';
+      var wHtml = '<div class="section-title">' + t('sec_active_wars') + '</div>';
       for (var wi = 0; wi < state.activeWars.length; wi++) {
         var w   = state.activeWars[wi];
         var reg = findRegion(w.regionId);
@@ -1280,8 +1438,8 @@ function render() {
     var timeEl   = document.getElementById('war-time-' + w2.regionId);
     var pctEl    = document.getElementById('war-pct-'  + w2.regionId);
     if (fillEl) fillEl.style.width = pct + '%';
-    if (timeEl) { timeEl.style.color = done ? '#80c080' : '#c08080'; timeEl.textContent = done ? 'DONE' : formatTime(remaining); }
-    if (pctEl)  pctEl.textContent = done ? '✓ CONQUERED' : Math.floor(pct) + '%';
+    if (timeEl) { timeEl.style.color = done ? '#80c080' : '#c08080'; timeEl.textContent = done ? t('war_timer_done') : formatTime(remaining); }
+    if (pctEl)  pctEl.textContent = done ? t('war_timer_conq') : Math.floor(pct) + '%';
   }
 
   // Dev panel
@@ -1317,10 +1475,10 @@ function resetGame() {
   try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
   location.reload();
 }
-function cheatBoost()    { state.cc += 10000; state.lifetimeCC += 10000; toast('+10K CC'); }
+function cheatBoost()    { state.cc += 10000; state.lifetimeCC += 10000; toast(t('toast_cheat_cc')); }
 function cheatTimeWarp() {
   for (var i = 0; i < state.activeWars.length; i++) state.activeWars[i].startTime -= 3600 * 1000;
-  toast('Subtracted 1h from all active wars.');
+  toast(t('toast_cheat_time'));
 }
 
 // ============ TABS ============
@@ -1356,6 +1514,7 @@ document.getElementById('buy-vrrk').addEventListener('click', function() { buyVa
 
 // ============ INIT ============
 setupDOM();           // generator rows and upgrade cards created once
+applyStrings();       // apply i18n to static HTML data-i18n attributes
 loadGame();           // restore save + apply offline accrual (no-op on fresh start)
 renderMap();
 renderRegionInfo();
