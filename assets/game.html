@@ -472,6 +472,7 @@ var state = {
   startTime:   Date.now(),
   firstGenAt:  null,
   firstConquestAt: null,
+  genUnlockToasted: {},  // tracks which unlock toasts have fired (survives save/load in Chunk D)
 
   // Generator counts
   // genCounts: fractional float (purchased + produced by higher tiers via compound chain)
@@ -583,6 +584,20 @@ function advanceCompound(dt) {
   var earned = state.genCounts.formsworth * gens[0].rate * ccMultiplier() * dt;
   state.cc         += earned;
   state.lifetimeCC += earned;
+}
+
+// Fires a toast the first time each generator becomes unlocked.
+// Called every tick; guarded by state.genUnlockToasted so each message fires once.
+function checkUnlocks() {
+  for (var i = 0; i < CONFIG.generators.length; i++) {
+    var g = CONFIG.generators[i];
+    if (state.genUnlockToasted[g.id]) continue;
+    if (!isGenUnlocked(g)) continue;
+    state.genUnlockToasted[g.id] = true;
+    if (g.tier > 1) {  // T1 is always unlocked at start — no toast needed
+      toast('&#128275; <strong>' + g.name + '</strong> unlocked! (T' + g.tier + ')');
+    }
+  }
 }
 
 // ============ MAP ============
@@ -854,6 +869,7 @@ function tick() {
   if (dt > 0.25) dt = 0.25;
 
   advanceCompound(dt);
+  checkUnlocks();
 
   // Sun / Pepper region income
   var r = ratePerSec();
