@@ -1049,6 +1049,7 @@ function clickOrb(ev) {
 
 // ============ SAVE / LOAD / OFFLINE ============
 var SAVE_KEY = 'gb_save_v2';
+var _resetting = false; // set true during reset so visibilitychange/pagehide don't re-write the save
 
 // Applies offline accrual in 1-hour sub-steps at 50% efficiency for compound accuracy.
 // Returns CC earned during the offline period.
@@ -1071,6 +1072,7 @@ function applyOffline(totalSec) {
 }
 
 function saveGame() {
+  if (_resetting) return;
   try {
     var save = {
       version:          2,
@@ -1486,6 +1488,7 @@ function toast(msg) {
 
 // ============ DEV HELPERS ============
 function resetGame() {
+  _resetting = true;
   try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
   location.reload();
 }
