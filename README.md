@@ -1,6 +1,6 @@
 # Galactic Bureaucracy
 
-A mobile idle/incremental game built as a sci-fi bureaucracy parody. You play as a Galactic Emperor whose empire runs on absurd paperwork — vassals automate production, compound generator chains grow faster than anyone can control, and conquest is gated by fleet capacity and Mech-Bros in ill-fitting suits.
+A mobile idle/incremental game built as a sci-fi bureaucracy parody. You play as a Galactic Emperor whose empire runs on absurd paperwork — vassals automate production, compound generator chains grow faster than anyone can control, and conquest is gated by adjacency and Mech-Bros in ill-fitting suits.
 
 ---
 
@@ -22,11 +22,11 @@ Or open `assets/game.html` directly in any browser — no build step required.
 
 ## Features
 
-**Compound generator chain** — 7 tiers from Lord Formsworth III (produces Cyber Crystal) up to The Infinite Ledger. Each tier produces fractional units of the tier below; only Tier 1 mints CC. This creates exponential growth that accelerates on its own, even while idle. Tiers 1–3 unlock via CC milestones; Tiers 4–7 unlock through sector conquest.
+**Compound generator chain** — 7 tiers from Lord Formsworth III (produces Cyber Crystal) up to The Infinite Ledger. Each tier produces fractional units of the tier below; only Tier 1 mints CC. This creates exponential growth that accelerates on its own, even while idle. Tiers 1–3 unlock via CC milestones; Tiers 4–7 are visible but locked until sector conquest is implemented.
 
 **Upgrade tree** — three branches available from the start: Crystal Overclock (+10% CC/level), Expedited Warfare (−5% war timer/level), Bulk Enlistment (−4% Red Pill cost/level). Cost doubles per level; there's always something affordable.
 
-**8-region galactic map and war system** — regions are connected nodes; you can only attack regions adjacent to territory you own. Each war runs on a timer and consumes Mech-Bros (enlisted with Red Pill). Multiple wars run in parallel, bounded by your fleet's uncommitted capacity.
+**8-region galactic map and war system** — regions are connected nodes; you can only attack regions adjacent to territory you own. Each war runs on a timer and consumes Mech-Bros (enlisted with Red Pill). Multiple wars can run in parallel. Attacks require an adjacent player-owned region and enough Mech-Bros to meet that region's requirement (8–20 in the current map). There is no fleet or simultaneous-war cap in the current code.
 
 **Save + offline accrual** — state saves to `localStorage` every 30 seconds and on page hide. On return, the game calculates what the compound chain would have produced offline, applies it at 50% efficiency in 1-hour sub-steps (up to 8 hours max), and shows you what you earned.
 
@@ -51,12 +51,12 @@ python playthrough_sim.py 40   # simulate 40 days
 
 ### Chain verification
 
-`tools/reference_chain.py` and `tools/verify_economy.js` run the same deterministic scenario — formsworth=50, subclerk=10, datastack=5, all others=0, 3600 seconds at dt=10s steps — through (respectively) a pure-Python reference implementation and the real `advanceCompound` + `CONFIG` extracted from `assets/game.html`. Results are compared at 1e-6 relative tolerance.
+`tools/verify_economy.js` runs a deterministic scenario — formsworth=50, subclerk=10, datastack=5, all others=0, 3600 seconds at dt=10s steps — through both a pure-Python reference (`tools/reference_chain.py`, invoked automatically) and the real `advanceCompound` + `CONFIG` extracted from `assets/game.html`, then compares results at 1e-6 relative tolerance and prints a pass/fail table. Exit code 1 on any failure.
+
+This test verifies that the JS port of the chain maths produces the same result as the Python reference from a fixed starting state. It does not validate game balance.
 
 ```bash
-python3 tools/reference_chain.py   > /tmp/ref.json
-node    tools/verify_economy.js    > /tmp/js.json
-# All 8 keys pass at 0.00e+00 relative difference
+node tools/verify_economy.js
 ```
 
 ---
@@ -84,7 +84,7 @@ Requires Node and the Expo Go app or a simulator.
 
 ## How it was built
 
-The prototype was written with Claude Code in a few hours in May 2026. In October 2026 it was migrated to the compound economy model and polished further, also with Claude Code. Most of the workflow was: describe what the economy should feel like, let the sim validate it, then implement in JS. Claude Code handled the mechanical coding; the design decisions (balance numbers, feature order, what to cut) were all manual calls.
+The first prototype was built with Claude Code in a single session (19–20 May 2026, per file timestamps). In October 2026 I migrated it to a spreadsheet-driven economy model. The design direction and decisions are mine; the implementation, the spreadsheet model and the Python simulator were developed with AI assistance (Claude). Workflow: describe the intended feel, check pacing in the simulator, port the numbers to the JS CONFIG, verify the chain against a Python reference.
 
 ---
 
@@ -93,3 +93,5 @@ The prototype was written with Claude Code in a few hours in May 2026. In Octobe
 - **Expo WebView save persistence is untested.** The app loads `game.html` as an HTML string via `source={{ html }}`, which gives the WebView an anonymous origin. `localStorage` works in browser and may work with `domStorageEnabled={true}`, but whether saves persist between app launches on a real device has not been verified.
 - **No runtime language toggle.** EN/TR switching requires editing the `lang` variable in the source file.
 - **No store build.** EAS Build and store submission have not been attempted.
+- **`recalc.py` and `calibrate.py` are missing.** `ECONOMY-BALANCE.md` references both scripts (for recomputing the spreadsheet and sweeping base rates), but neither file is in the repository.
+- **Admiral mechanic is undocumented.** The simulator and spreadsheet reference an admiral/faction mechanic that does not appear in any `.md` file.
