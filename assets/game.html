@@ -406,8 +406,12 @@
   <h3>DEV STATS</h3>
   <div class="dev-stats" id="stats"></div>
   <button class="reset" onclick="resetGame()">Reset</button>
-  <button class="reset" style="background:#306030; margin-top:4px;" onclick="cheatBoost()">+10K Crystal (test)</button>
-  <button class="reset" style="background:#306030; margin-top:4px;" onclick="cheatTimeWarp()">+1h war timers (test)</button>
+  <button class="reset" style="background:#306030; margin-top:4px;" onclick="cheatBoost(10000)">+10K CC (test)</button>
+  <button class="reset" style="background:#306030; margin-top:4px;" onclick="cheatBoost(100000)">+100K CC (test)</button>
+  <button class="reset" style="background:#306030; margin-top:4px;" onclick="cheatBoost(1000000)">+1M CC (test)</button>
+  <button class="reset" style="background:#306030; margin-top:4px;" onclick="cheatTimeWarp(1)">+1h elapsed (test)</button>
+  <button class="reset" style="background:#306030; margin-top:4px;" onclick="cheatTimeWarp(12)">+12h elapsed (test)</button>
+  <button class="reset" style="background:#306030; margin-top:4px;" onclick="cheatTimeWarp(24)">+24h elapsed (test)</button>
 </div>
 
 <script>
@@ -525,8 +529,6 @@ var STRINGS = {
     toast_war_end:      'h)',
     toast_vrrk:         '⚔ Vrrk on duty. War timer shortened.',
     toast_redpill_suf:  ' Red Pill produced.',
-    toast_cheat_cc:     '+10K CC',
-    toast_cheat_time:   'Subtracted 1h from all active wars.',
     war_timer_done:     'DONE',
     war_timer_conq:     '✓ CONQUERED',
     upg_crystalOverclock: 'Crystal Overclock',
@@ -595,8 +597,6 @@ var STRINGS = {
     toast_war_end:      'h)',
     toast_vrrk:         '⚔ Vrrk görevde. Savaş timer’ı kısaldı.',
     toast_redpill_suf:  ' Kırmızı Hap üretildi.',
-    toast_cheat_cc:     '+10B Kristal',
-    toast_cheat_time:   'Tüm aktif savaşlardan 1 saat düşüldü.',
     war_timer_done:     'TAMAMLANDI',
     war_timer_conq:     '✓ FETHEDİLDİ',
     upg_crystalOverclock: 'Kristal Hızlandırma',
@@ -1492,10 +1492,17 @@ function resetGame() {
   try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
   location.reload();
 }
-function cheatBoost()    { state.cc += 10000; state.lifetimeCC += 10000; toast(t('toast_cheat_cc')); }
-function cheatTimeWarp() {
-  for (var i = 0; i < state.activeWars.length; i++) state.activeWars[i].startTime -= 3600 * 1000;
-  toast(t('toast_cheat_time'));
+function cheatBoost(amount) {
+  state.cc += amount; state.lifetimeCC += amount;
+  toast('+' + fmt(amount) + ' CC');
+}
+function cheatTimeWarp(hours) {
+  var ms = hours * 3600 * 1000;
+  // shift war start times back so they appear to have been running longer
+  for (var i = 0; i < state.activeWars.length; i++) state.activeWars[i].startTime -= ms;
+  // apply offline accrual for the elapsed period
+  applyOffline(hours * 3600);
+  toast('+' + hours + 'h elapsed');
 }
 
 // ============ TABS ============
