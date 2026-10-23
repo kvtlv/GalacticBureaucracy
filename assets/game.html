@@ -246,6 +246,14 @@
   .dim-buy-btn:disabled { opacity: 0.35; cursor: not-allowed; }
   .dim-buy-btn.affordable { background: #2040a0; color: #fff; border-color: #4060c0; }
   .dim-buy-btn small { display: block; font-size: 8px; font-weight: 400; opacity: 0.8; }
+  .buy-mode-bar { display:flex; gap:4px; margin:4px 0 8px; }
+  .buy-mode-btn {
+    flex:1; padding:7px 4px; font-size:11px; font-weight:700;
+    border-radius:6px; cursor:pointer;
+    background:rgba(30,30,70,0.6); color:#7080a0;
+    border:1px solid #404060;
+  }
+  .buy-mode-btn.active { background:#2040a0; color:#fff; border-color:#4060c0; box-shadow:0 0 8px rgba(60,120,255,0.3); }
 
   /* MAP NODES */
   .map-node { cursor: pointer; transition: all 0.2s; }
@@ -303,6 +311,12 @@
   <div class="dim-section-header">
     <span class="section-title">Generators</span>
     <span style="font-size:9px; color:#6070a0;" id="cc-rate-summary"></span>
+  </div>
+  <div class="buy-mode-bar">
+    <button class="buy-mode-btn active" id="bmode-1"   onclick="setBuyMode(1)">×1</button>
+    <button class="buy-mode-btn"        id="bmode-10"  onclick="setBuyMode(10)">×10</button>
+    <button class="buy-mode-btn"        id="bmode-100" onclick="setBuyMode(100)">×100</button>
+    <button class="buy-mode-btn"        id="bmode-max" onclick="setBuyMode(0)">Max</button>
   </div>
   <div id="gen-container"></div>
 
@@ -721,6 +735,46 @@ function genCost(g) {
   return g.baseCost * Math.pow(g.costMult, state.genPurchased[g.id]);
 }
 
+// Total cost to buy n generators starting from current purchased count.
+// Geometric series: baseCost × mult^k × (mult^n − 1) / (mult − 1)
+function genBuyCostN(g, n) {
+  if (n <= 0) return 0;
+  var k = state.genPurchased[g.id], m = g.costMult;
+  return g.baseCost * Math.pow(m, k) * (Math.pow(m, n) - 1) / (m - 1);
+}
+
+// Returns { n, cost } for the current buy mode against the player's budget.
+// Fixed modes (1/10/100): buy exactly n if affordable, else n=0.
+// Max (mode=0): largest n the budget covers (binary search).
+function genBuyInfo(g) {
+  if (!isGenUnlocked(g)) return { n: 0, cost: genCost(g) };
+  var mode = genBuyMode;
+  if (mode === 0) {
+    if (genBuyCostN(g, 1) > state.cc) return { n: 0, cost: genBuyCostN(g, 1) };
+    var lo = 1, hi = 2;
+    while (genBuyCostN(g, hi) <= state.cc) hi *= 2;
+    while (hi - lo > 1) {
+      var mid = Math.floor((lo + hi) / 2);
+      if (genBuyCostN(g, mid) <= state.cc) lo = mid; else hi = mid;
+    }
+    var n = lo;
+    return { n: n, cost: genBuyCostN(g, n) };
+  }
+  var cost = genBuyCostN(g, mode);
+  return { n: (cost <= state.cc ? mode : 0), cost: cost };
+}
+
+var genBuyMode = 1;  // 1, 10, 100, or 0 = max
+
+function setBuyMode(mode) {
+  genBuyMode = mode;
+  var ids = [1, 10, 100, 0];
+  for (var i = 0; i < ids.length; i++) {
+    var el = document.getElementById('bmode-' + (ids[i] === 0 ? 'max' : ids[i]));
+    if (el) el.className = 'buy-mode-btn' + (ids[i] === mode ? ' active' : '');
+  }
+}
+
 // CC/s multiplier: Sun Drips give a tiny global boost (capped +200%), Crystal Overclock upgrade
 // Full formula from ARCHITECTURE.md §11
 function ccMultiplier() {
@@ -738,10 +792,11 @@ function buyGen(id) {
   for (var i = 0; i < CONFIG.generators.length; i++) {
     if (CONFIG.generators[i].id === id) { g = CONFIG.generators[i]; break; }
   }
-  if (!g || !isGenUnlocked(g) || state.cc < genCost(g)) return;
-  state.cc -= genCost(g);
-  state.genCounts[id]++;
-  state.genPurchased[id]++;
+  var info = genBuyInfo(g);
+  if (!g || info.n <= 0) return;
+  state.cc -= info.cost;
+  state.genCounts[id]    += info.n;
+  state.genPurchased[id] += info.n;
   if (!state.firstGenAt) {
     state.firstGenAt = (Date.now() - state.startTime) / 1000;
     document.getElementById('hint').textContent = t('hint_working');
@@ -1242,7 +1297,8 @@ function setupDOM() {
       buyBtn.id        = 'gen-buy-' + g.id;
 
       var buyLabel = document.createElement('span');
-      buyLabel.textContent = 'Buy';
+      buyLabel.id          = 'gen-buylabel-' + g.id;
+      buyLabel.textContent = '×1';
 
       var costSmall = document.createElement('small');
       costSmall.id = 'gen-cost-' + g.id;
@@ -1349,6 +1405,11 @@ function render() {
     var canAfford = unlocked && state.cc >= cost;
     var count    = state.genCounts[g.id];
 
+    var info     = genBuyInfo(g);
+    var canAfford = info.n > 0;
+    var displayN = genBuyMode === 0 ? info.n : genBuyMode;
+    var displayCost = genBuyMode === 0 ? info.cost : genBuyCostN(g, genBuyMode);
+
     var row      = document.getElementById('gen-row-' + g.id);
     var buyBtn   = document.getElementById('gen-buy-' + g.id);
     var flavorEl = document.getElementById('gen-flavor-' + g.id);
@@ -1370,9 +1431,9 @@ function render() {
     } else {
       rateText = fmtRate(count * g.rate) + '/s T' + (gi);
     }
-    document.getElementById('gen-rate-' + g.id).innerHTML = rateText;
-
-    document.getElementById('gen-cost-' + g.id).textContent = fmt(cost) + ' ◆';
+    document.getElementById('gen-rate-'     + g.id).innerHTML  = rateText;
+    document.getElementById('gen-buylabel-' + g.id).textContent = '×' + displayN;
+    document.getElementById('gen-cost-'     + g.id).textContent = fmt(displayCost) + ' ◆';
   }
 
   // Special vassals
