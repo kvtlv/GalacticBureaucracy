@@ -6,7 +6,7 @@ A mobile idle/incremental game built as a sci-fi bureaucracy parody. You play as
 
 ## Play
 
-**Live demo:** `(https://kvtlv.github.io/GalacticBureaucracy/)`
+**Live demo:** `https://kvtlv.github.io/GalacticBureaucracy/`
 
 Or open `assets/game.html` directly in any browser — no build step required.
 
