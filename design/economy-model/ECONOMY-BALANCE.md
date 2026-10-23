@@ -56,23 +56,22 @@ multiple simultaneous changes make it impossible to see what caused what.
 | Tier | Generator | Base rate /s | Base cost | Cost mult | Unlock |
 |------|-----------|--------------|-----------|-----------|--------|
 | 1 | Lord Formsworth III | 1.0 (→CC) | 40 | 1.25 | start |
-| 2 | Sub-Clerk Battalion | 0.0005 | 800 | 1.25 | 5k CC |
-| 3 | Regional Datastack | 0.0004 | 60,000 | 1.25 | 500k CC |
-| 4 | Orbital Archive | 0.00032 | 9e6 | 1.25 | conquer Inner |
-| 5 | Sector Bureaucphere | 0.000256 | 1.6e9 | 1.25 | conquer Mid |
-| 6 | Galactic Census Engine | 0.000205 | 3.2e11 | 1.25 | conquer Outer |
-| 7 | The Infinite Ledger | 0.000164 | 7.2e13 | 1.25 | conquer Fringe |
+| 2 | Sub-Clerk Battalion | 0.05 | 800 | 1.25 | 5k CC |
+| 3 | Regional Datastack | 0.004 | 60,000 | 1.25 | 500k CC |
+| 4 | Orbital Archive | 0.00096 | 9e6 | 1.25 | conquer Inner |
+| 5 | Sector Bureaucphere | 0.000768 | 1.6e9 | 1.25 | conquer Mid |
+| 6 | Galactic Census Engine | 0.000615 | 3.2e11 | 1.25 | conquer Outer |
+| 7 | The Infinite Ledger | 0.000492 | 7.2e13 | 1.25 | conquer Fringe |
 
 - **Base rate** = how fast a tier produces the tier below. **Higher rate = far more explosive**
-  (these compound down the chain). The current values were calibrated from a runaway raw model
-  (0.10/tier gave 4.6×10²⁴ CC/s by day 25) down to a clean curve. Treat ~0.0005 as the safe
-  ceiling for tier-2; raising it re-ignites runaway fast.
+  (these compound down the chain). T2 raised ×100, T3 ×10, T4–T7 ×3 vs. original calibration.
 - **Base cost / cost mult (1.25)** keep high tiers rare. Lowering cost mult → you own more of each
   tier → faster compounding. Raising costs is the safest brake on the curve.
-- Validated curve (current values): **~12 CC/s at start → ~25 trillion/s by day ~38**, always
-  accelerating, conquest unlocks driving visible leaps (days ~4, 10, 20, 32).
-- **If the number explodes too fast:** raise costs and/or lower tier-2/3 base rates first.
-- **If it feels flat/slow:** lower costs slightly or nudge base rates up by ~20% and re-sim.
+- Validated curve (current values): **~12 CC/s at start → ~7M/s by day 1 → ~625T/s by day 12**,
+  P1 ≈ day 6, P2 ≈ day 12.5, full 54/54 ≈ day 34. ⚠ Visa costs now a weak gate at high CC/s —
+  consider raising transit visa costs 3–5× if late-game conquest feels too trivial.
+- **If the number explodes too fast:** raise costs and/or lower tier-2/3 base rates.
+- **If it feels flat/slow:** nudge base rates up by ~20% and re-sim.
 - Calibration helper: `calibrate.py` sweeps a rate scale and prints CC/s at days 1/5/10/18.
 
 ---
